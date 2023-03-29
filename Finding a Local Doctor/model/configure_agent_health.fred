@@ -1,0 +1,135 @@
+comment {
+
+    A model to configure an agent's initial health status and appointment type preferences.
+   
+    Parent model: DR_OFFICE_MODERNISATION_EFFICIENCY
+    Author: J. A. McQuade, jessica.mcquade@epistemix.com
+    Date: 22/07/22
+
+}
+
+
+variables {
+
+    agent numeric health
+    agent list appointment_preference
+    agent numeric current_attempts_at_booking
+    agent list historic_attempts_at_booking
+    agent numeric impatience
+
+    shared list inperson_only_pref
+    shared list telephone_inperson_pref
+    shared list online_telephone_inperson_pref
+    shared list_table all_appointment_preferences
+
+    health = 0
+    impatience = 0
+    current_attempts_at_booking = 0
+	inperson_only_pref = list(0)
+	telephone_inperson_pref = list(0, 1)
+	online_telephone_inperson_pref = list(0, 1, 2)
+
+}
+
+
+condition CONFIGURE_AGENT_HEALTH {
+
+    start_state = InitialiseHealth
+    group_start_state = Excluded
+    meta_start_state = MetaStart
+
+
+    comment doc {
+        
+        A condition that configures an agent's initial health status. 
+        Those older than 60 or younger than 10 are more likely to have poorer initial health.
+
+        Subjected
+        --------
+        agent : True
+        group : False
+        meta : True
+
+        Variables
+        ---------
+        health : agent numeric 
+            An agent's health status where
+            0 : healthy
+            1 : mild
+            2 : moderate 
+            3 : serious
+            4 : severe
+        appointment_preference : agent list 
+            agent's appointment preference detailing which appointments they will book
+        current_attempts_at_booking : agent numeric 
+            current number of unsuccessful attemps at booking an appointment
+        historic_attempts_at_booking : agent list 
+            history of booking attempts between successfully booked appointments
+        impatience : agent numeric 
+            flag if agent is impatient (and likely to go to ED even if not necessary)
+        inperson_only_pref : shared list 
+            index list describing preference for agents only accepting in-person appointments
+        telephone_inperson_pref : shared list 
+            index list describing preference for agents only accepting in-person and phone appointments
+        online_telephone_inperson_pref : shared list 
+            index list describing preference for agents accepting in-person, phone and online appointments
+        all_appointment_preferences : shared list_table 
+            list table describing all preference indexes for booking appointments
+		
+        Dependencies
+		------------
+		None
+
+    }
+
+    variables{
+
+        agent numeric appointment_preference_idx
+
+    }
+
+
+	state MetaStart {
+
+		all_appointment_preferences[0] = inperson_only_pref
+		all_appointment_preferences[1] = telephone_inperson_pref
+		all_appointment_preferences[2] = online_telephone_inperson_pref
+
+		wait(0)
+		next(Excluded)
+
+	}
+
+
+    state InitialiseHealth {
+
+        health = round(abs(normal(0, 1)))
+        if(gte(age, 60)) then health = health + 1
+        if(lte(age, 10)) then health = health + 1
+        if(health > 4) then health = 4
+
+        wait(0)
+        next(GetAppointmentPreference)
+
+    }
+
+
+    state GetAppointmentPreference {
+
+        appointment_preference_idx = last(sample_with_replacement(list(0,1,2), 1))
+        appointment_preference = all_appointment_preferences[appointment_preference_idx]
+
+        wait(0)
+        next(Excluded)
+
+    }
+}
+
+
+
+
+
+
+
+
+
