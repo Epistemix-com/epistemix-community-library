@@ -1,0 +1,281 @@
+simulation {
+	start_date = 2023-Jan-01
+	end_date = 2023-Apr-01
+	#end_date = 2023-Jan-02
+}
+
+variables {
+	## simulation variables
+	shared numeric k # factor for arrest prob
+	shared numeric threshold # how much to rebel
+	shared numeric government_legitimacy # lower legitimacy increases likelihood of rebellion
+	shared numeric vision # how large the "neighborhood" that cops and agents evaluate their behavior against
+	shared numeric visible_agents
+	shared numeric jail_sentence
+	
+	## all agent variables
+	agent numeric agent_type # 1=place, 2=regular agent, 3=cop
+	agent numeric x_pos
+	agent numeric y_pos
+	agent numeric occupied # for place agents, 0=empty, 1=occupied
+
+	## regular agent variables
+	agent numeric risk_aversion # 0-1 inclusive
+	agent numeric perceived_hardship # 0-1 inclusive
+	agent numeric agent_status # -1: jailed, 0:passive, 1:rebel, 2:cop
+	agent numeric grievance # perceived_hardship * (1-government_legitimacy)
+	agent numeric estimated_arrest_probability
+	agent numeric jail_term # 0 if not in jail, otherwise number of days left in sentence
+	
+	agent numeric agent_location # id of place occupied by agent, used by agents
+	
+	## cop variables
+	agent numeric suspect # id of agent who is arrested
+	
+	## place variables
+	agent numeric agent_in_place # id of agent who is at this location
+	
+	## in-model tracking vars
+	shared list all_places # list of place agents
+	shared list available_places
+	agent list neighborhood
+	agent numeric n_cops
+	agent numeric n_rebels
+	
+	### this is all PLACE_AGENT stuff
+	# loop var
+	shared numeric loc
+	
+	agent list dist
+	agent table dist_to_neighbors
+	agent numeric max_dist
+	
+	agent list tmp1
+	agent list tmp2
+	agent list tmp3
+	agent list tmp4
+	
+	agent list dist_indices
+	
+	shared list_table nearby_locations
+	nearby_locations.output=1
+}
+
+startup {
+	open_csv(regular_agent_info.csv, "id", "simday", "risk", "hardship", "grievance", "n_cops", "n_rebels", "est_arrest_prob")
+	open_csv(movement.csv, "id", "agent_type", "simday", "place_id", "place_status", "agent_status", "xloc", "yloc")
+	
+	## sim variables
+	k = 2.3
+	threshold = 0.1
+	government_legitimacy = 0.7
+	vision = 7
+	jail_sentence = 15
+	
+	visible_agents = round(3.14*pow(vision,2))
+	
+	## agent variables
+	occupied = 0
+}
+
+
+condition GENERATE_LOCATIONS {
+	meta_start_state = Load_Agents
+	
+	state Load_Agents {
+		read_agent_file(place_agents.csv)
+		read_agent_file(regular_agents.csv)
+		read_agent_file(cop_agents.csv)
+		
+		wait(0)
+		default(Excluded)
+	}
+}
+
+condition PLACE_AGENTS {
+	start_state = Start
+	
+	state Start {
+		wait(0)
+		if (agent_type==1) then next(Create_Place_List)
+		default(Excluded)
+	}
+	
+	state Create_Place_List {
+		push(all_places, id)
+		wait(1)
+		default(Find_Neighbors)
+	}
+	
+	state Find_Neighbors {
+		
+		tmp1 = ask(all_places,x_pos)
+		tmp2 = ask(all_places,y_pos)
+		
+		tmp3 = apply(tmp1-x_pos, pow(_,2))
+		tmp4 = apply(tmp2-y_pos, pow(_,2))
+
+		dist = apply(tmp3 + tmp4, pow(_,0.5))
+		
+		
+		max_dist = select(sort(dist),visible_agents)
+		dist_indices = select_index(dist, _ < max_dist)
+		nearby_locations[id] = select(all_places, dist_indices)
+		
+		wait(0)
+		default(Excluded)
+	}
+}
+
+
+condition REGULAR_AGENTS {
+	start_state = Start
+	
+	state Start {
+		wait(2)
+		if (agent_type==2) then next(Setup)
+		default(Excluded)
+	}
+	
+	state Setup {
+		agent_status = 0
+		risk_aversion = uniform(0,1)
+		perceived_hardship = uniform(0,1)
+		grievance = perceived_hardship * (1-government_legitimacy)
+		
+		available_places = filter_agents(all_places, ask(_,occupied)==0)
+		agent_location = last(sample_with_replacement(available_places, 1))
+		tell(agent_location, occupied, 1)
+		tell(agent_location, agent_in_place, id)
+		
+		print_csv(movement.csv, id, agent_type, sim_day, agent_location, ask(agent_location, occupied), agent_status, ask(agent_location, x_pos), ask(agent_location, y_pos))
+		
+		wait(24)
+		default(Consider_Rebellion)
+	}
+	
+	state Consider_Rebellion {
+		# get a list of place ids around agent
+		neighborhood = nearby_locations[agent_location]
+		#if (id==10001) then print(neighborhood)
+		# count number of cops and rebels in neighborhood
+		n_cops = length(filter_agents(neighborhood, ask(_,occupied)==3))
+		n_rebels = length(filter_agents(neighborhood, ask(_,occupied)==2))+1
+		# calculate arrest probability
+		
+		estimated_arrest_probability = 1 - exp(-k*floor(n_cops/n_rebels))
+		#estimated_arrest_probability = 1 - exp(-k*n_cops/n_rebels)
+		
+		print_csv(regular_agent_info.csv, id, sim_day, risk_aversion, perceived_hardship, grievance, n_cops, n_rebels, estimated_arrest_probability)
+		
+		wait(0)
+		if (grievance - risk_aversion * estimated_arrest_probability > threshold) then next(Rebellion)
+		default(Passive)
+	}
+	
+	state Passive {
+		agent_status = 0
+		wait(24)
+		default(Select_Location)
+		#default()
+	}
+	
+	state Rebellion {
+		tell(agent_location, occupied, 2)
+		agent_status = 1
+		wait(24)
+		default(Select_Location)
+		#default()
+	}
+	
+	state Select_Location {
+		neighborhood = nearby_locations[agent_location]
+		tell(agent_location, occupied, 0) # clear out current location
+		
+		available_places = filter_agents(neighborhood, ask(_,occupied)==0) # get list of available locations (within vision)
+		agent_location = last(sample_with_replacement(available_places, 1)) # select location to move to
+		
+		tell(agent_location, occupied, 1) # update location status
+		tell(agent_location, agent_in_place, id)
+		
+		print_csv(movement.csv, id, agent_type, sim_day, agent_location, ask(agent_location, occupied), agent_status, ask(agent_location, x_pos), ask(agent_location, y_pos))
+		
+		wait(0)
+		default(Consider_Rebellion)
+	}
+	
+	state Go_To_Jail {
+		jail_term = round(uniform(1,jail_sentence))
+		agent_status = -1
+        print_csv(movement.csv, id, agent_type, sim_day, agent_location, ask(agent_location, occupied), agent_status, ask(agent_location, x_pos), ask(agent_location, y_pos))
+		tell(agent_location, occupied, 0) # other agents can share space when in jail
+		wait(24)
+		default(Jail)
+	}
+	
+	state Jail {
+		jail_term = jail_term -1
+		print_csv(movement.csv, id, agent_type, sim_day, agent_location, ask(agent_location, occupied), agent_status, ask(agent_location, x_pos), ask(agent_location, y_pos))
+		wait(24)
+		if (jail_term==0) then next(Out_Of_Jail)
+		default(Jail)
+	}
+	
+	state Out_Of_Jail {
+		agent_status = 0
+		wait(0)
+		default(Select_Location)
+	}
+}
+
+condition COP_AGENTS {
+	start_state = Start
+	
+	state Start {
+		wait(2)
+		if (agent_type==3) then next(Setup)
+		default(Excluded)
+	}
+	
+	state Setup {
+		agent_status = 2
+		available_places = filter_agents(all_places, ask(_,occupied)==0)
+		agent_location = last(sample_without_replacement(available_places, 1))
+		tell(agent_location, occupied, 3)
+		tell(agent_location, agent_in_place, id)
+		#print_csv(regular_agent_info.csv, id, 0, 0, 0, 0, 0, ask(agent_location, x_pos), ask(agent_location, y_pos))
+		print_csv(movement.csv, id, agent_type, sim_day, agent_location, ask(agent_location, occupied), 2, ask(agent_location, x_pos), ask(agent_location, y_pos))
+		wait(24)
+		default(Make_Arrest)
+	}
+	
+	state Make_Arrest {
+		neighborhood = nearby_locations[agent_location]
+		n_rebels = length(filter_agents(neighborhood, ask(_,occupied)==2))
+		if (n_rebels>0) then {
+			suspect = last(sample_without_replacement(ask(filter_agents(neighborhood, ask(_,occupied)==2),agent_in_place),1))
+			#tell(suspect, jail_term, jail_sentence+1)
+			#tell(suspect, agent_status, -1)
+			#tell(ask(suspect,agent_location), occupied, -1)
+			send(suspect, REGULAR_AGENTS, Go_To_Jail)
+		}
+		
+		wait(24)
+		default(Select_Location)
+	}
+	
+	state Select_Location {
+		neighborhood = nearby_locations[agent_location]
+		tell(agent_location, occupied, 0) # clear out current location
+		
+		available_places = filter_agents(neighborhood, ask(_,occupied)==0) # get list of available locations (within vision)
+		agent_location = last(sample_without_replacement(available_places, 1))
+		tell(agent_location, occupied, 3)
+		tell(agent_location, agent_in_place, id)
+		
+		#print_csv(regular_agent_info.csv, id, 0, 0, 0, 0, 0, ask(agent_location, x_pos), ask(agent_location, y_pos))
+		print_csv(movement.csv, id, agent_type, sim_day, agent_location, ask(agent_location, occupied), 2, ask(agent_location, x_pos), ask(agent_location, y_pos))
+		wait(0)
+		default(Make_Arrest)
+	}
+}
