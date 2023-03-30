@@ -1,0 +1,21 @@
+[metadata]
+name = "Epstein Rebellion Model - Geospatial"
+description = """
+This model captures the evolution of civil violence in a population split into regular agents, who are disaffected and willing to rebel if the conditions are right, and cop agents, who try to quell rebellion by jailing those agents.
+
+In this implementation, the households of Grand Isle County, VT serve as the locations between which agents move. Based on their close neighbors (determined by the vision parameter), they assess if their personal grievance is higher than their risk of being arrested (determined by the ratio of already rebelling agents to cops in the neighborhood). Each day agents move to a new location and repeat this behavior. """
+categories = [
+    "Social Science"
+]
+authors = [
+    "Claire Dickey <claire.dickey@epistemix.com>"
+]
+version = "0.1.0"
+fred_versions = [
+  ">=8.4",
+  "<9"
+]
+
+[run_options]
+src_dir = "source"
+entrypoint = "model/rebellion.fred"

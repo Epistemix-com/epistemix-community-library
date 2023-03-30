@@ -1,0 +1,128 @@
+comment {
+
+   Model name: Transactions
+   Author: Erin Zwick, erin.zwick@epistemix.com
+   Date: 11/02/2022
+   Description: The purpose of the Transactions model is to demonstrate generating
+       synthetic sales data with a FRED model.
+   Scenarios: Users can adjust the number of stores, items, and prices by editing
+       `data/item_inventory_TRANSACTIONS.csv`
+}
+
+simulation {
+    locations = Loving_County_TX
+    start_date = 2022-May-10
+    end_date = 2022-May-11
+
+}
+
+variables {
+    shared list_table store_inventories
+    shared list_table item_prices
+    shared list stores
+    shared numeric x
+    
+    agent list my_items
+    agent numeric my_store
+    agent numeric my_total_spent
+    agent numeric race
+}
+
+startup {
+    # code 999 means item is not available at that store
+    open_csv(transactions.csv, "id", "age", "race", "today", "store","num_items","total_spent")
+    read_list_table(store_inventories, $FRED_PROJECT/data/item_inventory_TRANSACTIONS.csv,1,0)
+    read_list_table(item_prices, $FRED_PROJECT/data/item_inventory_TRANSACTIONS.csv,0,2)
+    stores = read($FRED_PROJECT/data/item_inventory_TRANSACTIONS.csv,1)
+}
+
+condition SHOPPING {
+
+    comment doc {
+        This condition has agents pick a store to shop at, then sends them
+        shopping.
+
+        Subjected
+        --------
+        agent : True
+        group : False
+        meta : False
+
+        Variables
+        ---------
+        item_prices : shared list table
+            table where keys are item numbers and values are lists of prices
+            indexed by store number
+        my_items : agent list
+            list of items agent will purchase
+        my_store : agent list
+            store that agent will shop at (note is a list because it stores 
+            results of sample_without_replacement)
+        my_total_spent : agent numeric
+            total agent spends on items
+        race : agent factor
+            numeric value taht corresponds to an agent's race
+        store_inventories : shared list table
+            table where keys are store numbers and values are lists of available
+            items at that store
+        stores : shared list
+            list of stores
+        x : iterator
+            used to iterate through agent's items to print receipt
+
+
+        Dependencies
+        ------------
+        None
+    }
+    
+    variables {
+        # local variable to temporarily store number of items agent purchases
+        shared numeric number_of_items
+    }
+    
+    start_state = Start
+    
+    state Start {
+        wait(0)
+        if (age >= 18) then next(ChooseStore)
+        default(Excluded)
+    }
+    
+    state ChooseStore {
+        wait(0)
+        my_store = last(sample_with_replacement(stores,1))
+        next(GoShopping)
+    }
+    
+    state GoShopping {
+        number_of_items = uniform(1,length(store_inventories[my_store]))
+        
+        my_items = sample_without_replacement(store_inventories[my_store], number_of_items)
+        
+        print("ID     ", id)
+        print("----------------")
+        print("Store  ", my_store)
+        print("Item No. ", "  Price")
+        
+        for (x, my_items) do {
+            if(item_prices[x][my_store-1] != 999) then {
+                print("   ",x,"         $",item_prices[x][my_store-1])
+                my_total_spent = my_total_spent + item_prices[x][my_store-1]
+            }
+            else {
+                my_total_spent = my_total_spent + 0
+            }
+        }
+        
+        print("Total:       $", my_total_spent)
+        print("----------------")
+        
+        print_csv(transactions.csv, id, age, race, today, my_store, length(my_items), my_total_spent)
+        
+        wait(0)
+        next(Excluded)
+    }
+
+
+}
