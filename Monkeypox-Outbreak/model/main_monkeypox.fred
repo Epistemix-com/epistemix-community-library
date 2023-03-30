@@ -13,8 +13,7 @@ variables {
 	agent numeric sex
 }
 
-include $FRED_PROJECT/library/mpox.fred
-include $FRED_PROJECT/library/msm.fred
-include $FRED_PROJECT/library/bathhouse.fred
-include $FRED_PROJECT/library/test_report.fred
-
+include model/mpox.fred
+include model/msm.fred
+include model/bathhouse.fred
+include model/test_report.fred

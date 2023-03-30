@@ -16,4 +16,4 @@ fred_versions = [
 
 [run_options]
 src_dir = "source"
-entrypoint = "main_GROUND_LOGISTICS.fred"
+entrypoint = "model/main.fred"

@@ -53,7 +53,7 @@ condition GENERATE_TRUCKS {
 	}
 
 	state InitTrucks {
-		read_agent_file($FRED_PROJECT/models/ground-logistics-model/model_data/trucks.txt)
+		read_agent_file($FRED_PROJECT/data/trucks.txt)
 		wait()
 		next()
 	}

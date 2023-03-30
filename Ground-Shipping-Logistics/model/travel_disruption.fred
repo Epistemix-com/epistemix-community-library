@@ -42,8 +42,6 @@ condition MONITOR_DISRUPTIONS {
 		`city_locations.fred` : GENERATE_LOCATIONS
 	}
 
-	# I think there's a more straightforward way to do this with
-	# group agents for City places
 	meta_start_state = MetaStart
 
 	state MetaStart {
@@ -52,7 +50,7 @@ condition MONITOR_DISRUPTIONS {
 	}
 
 	state ReadCapacities {
-		read_table(truck_capacity,$FRED_PROJECT/models/ground-logistics-model/model_data/truck_capacity.txt,0,1)
+		read_table(truck_capacity,$FRED_PROJECT/data/truck_capacity.txt,0,1)
 		wait(0)
 		next(CheckForDisruptions)
 	}
@@ -82,7 +80,7 @@ condition CAUSE_DISRUPTION {
 	}
 
 	state DecideDisruption {
-		city_list = read($FRED_PROJECT/models/ground-logistics-model/model_data/truck_capacity.txt,0)
+		city_list = read($FRED_PROJECT/data/truck_capacity.txt,0)
 		wait(uniform(1,7)*24)
 		next(Disruption) with prob(0.5)
 		default(DecideDisruption)

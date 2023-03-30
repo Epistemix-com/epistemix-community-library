@@ -20,4 +20,4 @@ fred_versions = [
 
 [run_options]
 src_dir = "source"
-entrypoint = "main.fred"
+entrypoint = "model/schelling_block.fred"

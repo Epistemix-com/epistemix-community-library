@@ -1,0 +1,9 @@
+
+simulation {
+    start_date = 2020-Jan-01
+    end_date = 2020-Feb-01
+}
+
+include model/city_locations.fred
+include model/trucks.fred
+include model/travel_disruption.fred

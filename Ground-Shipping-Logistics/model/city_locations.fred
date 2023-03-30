@@ -50,9 +50,9 @@ condition GENERATE_LOCATIONS {
 	}
 
 	state InitLocations {
-		read_place_file($FRED_PROJECT/models/ground-logistics-model/model_data/city_locations.txt,City)
-		read_list_table(adjacency_matrix,$FRED_PROJECT/models/ground-logistics-model/model_data/routes.csv,0,1)
-		read_list_table(distance_matrix,$FRED_PROJECT/models/ground-logistics-model/model_data/routes.csv,0,2)
+		read_place_file($FRED_PROJECT/data/city_locations.txt,City)
+		read_list_table(adjacency_matrix,$FRED_PROJECT/data/routes.csv,0,1)
+		read_list_table(distance_matrix,$FRED_PROJECT/data/routes.csv,0,2)
 		wait()
 		next()
 	}

@@ -17,4 +17,4 @@ fred_versions = [
 
 [run_options]
 src_dir = "source"
-entrypoint = "main_doctors_office.fred"
+entrypoint = "model/main.fred"

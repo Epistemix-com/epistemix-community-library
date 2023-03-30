@@ -16,4 +16,4 @@ fred_versions = [
 
 [run_options]
 src_dir = "source"
-entrypoint = "main_WATER.fred"
+entrypoint = "model/main_WATER.fred"

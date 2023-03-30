@@ -36,5 +36,5 @@ place County {
     has_group_agent = 1
 }
 
-include water_activity.fred  
-include report_monthly_usage.fred
+include model/water_activity.fred  
+include model/report_monthly_usage.fred
