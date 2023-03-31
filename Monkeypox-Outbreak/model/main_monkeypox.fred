@@ -1,0 +1,19 @@
+
+simulation {
+	start_date = 2022-Jun-01
+	end_date = 2024-Jun-01
+	locations = Dane_County_WI
+
+	# agents interact only in BathHouses
+    default_model = none
+}
+
+variables {
+    # need to distinguish males from females
+	agent numeric sex
+}
+
+include model/mpox.fred
+include model/msm.fred
+include model/bathhouse.fred
+include model/test_report.fred

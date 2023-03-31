@@ -1,0 +1,102 @@
+comment {
+	A model for monitoring and causing travel disruptions.
+
+	Authors
+	-------
+	Erin Zwick : erin.zwick@epistemix.com
+}
+
+variables {
+	shared table truck_capacity
+	truck_capacity.output = 1
+
+	shared numeric disruption
+	shared numeric disrupted_location
+	shared list city_list
+}
+
+condition MONITOR_DISRUPTIONS {
+	comment doc {
+		A condition that reads in data and generates truck agents.
+
+		Subjected
+		--------
+		agent : False
+		admin : False
+		meta : True
+
+		Variables
+		---------
+		city_list : shared list
+			list of cities in model
+		disruption : shared numeric
+			indicator variable to check for a disruption
+		disrupted_location : shared numeric
+			city ID for place that has disruption
+		truck_capacity : shared table
+			table of truck capacity at each city; city IDs
+			are keys and capacities are values
+
+		Dependencies
+		------------
+		`city_locations.fred` : GENERATE_LOCATIONS
+	}
+
+	meta_start_state = MetaStart
+
+	state MetaStart {
+		wait(0)
+		next(ReadCapacities)
+	}
+
+	state ReadCapacities {
+		read_table(truck_capacity,$FRED_PROJECT/data/truck_capacity.txt,0,1)
+		wait(0)
+		next(CheckForDisruptions)
+	}
+
+	state CheckForDisruptions {
+		if (disruption > 0) then next(ResetCapacities)
+		wait(7*24)
+		next(CheckForDisruptions)
+	}
+
+	state ResetCapacities {
+		if (disruption <= 0) then next(CheckForDisruptions)
+		disruption = disruption - 1
+		truck_capacity[disrupted_location] = 0
+		wait()
+		next()
+	}
+
+}
+
+condition CAUSE_DISRUPTION {
+	meta_start_state = MetaStart
+
+	state MetaStart {
+		wait(0)
+		next(DecideDisruption)
+	}
+
+	state DecideDisruption {
+		city_list = read($FRED_PROJECT/data/truck_capacity.txt,0)
+		wait(uniform(1,7)*24)
+		next(Disruption) with prob(0.5)
+		default(DecideDisruption)
+	}
+
+	state Disruption {
+		disrupted_location = last(sample_without_replacement(city_list,1))
+		disruption = disruption + 1
+		wait(uniform(7,14)*24)
+		next(ResumeNormalOperations)
+	}
+
+	state ResumeNormalOperations {
+		disruption = 0
+		set_state(MONITOR_DISRUPTIONS, ReadCapacities)
+		wait(0)
+		next(DecideDisruption)
+	}
+}

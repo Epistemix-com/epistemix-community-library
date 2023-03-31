@@ -1,0 +1,19 @@
+[metadata]
+name = "Simple Flu"
+description = """
+A model that represents the spread of influenza throughout a population, characterized with a compartmental Symptomatic-Exposed-Infectious-Recovered (SEIR) model. Agents can either be symptomatic or asymptomatic when infectious."""
+categories = [
+    "Population Health"
+]
+authors = [
+    "Claire Dickey <claire.dickey@epistemix.com>"
+]
+version = "0.1.0"
+fred_versions = [
+  ">=8.4",
+  "<9"
+]
+
+[run_options]
+src_dir = "source"
+entrypoint = "model/main.fred"

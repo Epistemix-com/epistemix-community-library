@@ -1,0 +1,19 @@
+[metadata]
+name = "Ground Shipping Logistics"
+description = """
+This model represents a ground transportation network. Cities represent nodes in the network and roads are edges. A table of trucks agents is read in at the beginning of the simulation. There are no human agents in the model. """
+categories = [
+    "Infrastructure"
+]
+authors = [
+    "Andrew Lane"
+]
+version = "0.1.0"
+fred_versions = [
+  ">=8.4",
+  "<9"
+]
+
+[run_options]
+src_dir = "source"
+entrypoint = "model/main.fred"

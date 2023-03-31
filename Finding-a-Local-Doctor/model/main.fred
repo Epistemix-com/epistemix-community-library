@@ -1,0 +1,29 @@
+comment {
+
+   Model name: Dr. office modernisation efficiency
+   Author: J. A. McQuade, jessica.mcquade@epistemix.com
+   Date: 22/07/22
+   Description: This model is a demo model simulating health outcomes and inefficiences in a dr office. 
+         Agents become ill and try to access local healthcare, becoming increasingly impatient if they are
+         unable to get an appointment. This culminates in avoidable or unnecessary visits to the ED.
+   Scenarios: The modernity factors allocated to the Dr Office is adjusted by:
+         #Scenario_lever_1, my_modernity_factor in configure_dr_office.fred, CONDITION: CONFIGURE_DR_OFFICE, State: AssignModernityFactor
+
+}
+
+
+simulation {
+
+   locations = Kewaunee_County_WI
+   start_date = 2020-Jan-01
+   end_date = 2020-Feb-01
+
+}
+
+
+include model/configure_dr_office.fred
+include model/configure_agent_health.fred
+include model/get_local_dr_office.fred
+include model/health_update.fred
+
+

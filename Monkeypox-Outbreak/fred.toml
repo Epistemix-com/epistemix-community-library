@@ -1,0 +1,19 @@
+[metadata]
+name = "Monkeypox Outbreak"
+description = """
+Modeling a Monkeypox outbreak in Allegheny County, where transmission specifically occurs in bathhouses. The model has a subset of the msm population visit bathhouses on a regular schedule. Agents select a candidate sexual partner from the other attendees of the bathhouse on a given day. In a sexual encounter, an infected agent can transmit monkeypox to their partner. Agents may have multiple partners per visit, if they are selected by others, but every agent only chooses one partner per visit. Agents also test for monkeypox upon the emergence of symptoms and report their cases. """
+categories = [
+    "Population Health"
+]
+authors = [
+    "Tommy Nelson"
+]
+version = "0.1.0"
+fred_versions = [
+  ">=8.4",
+  "<9"
+]
+
+[run_options]
+src_dir = "source"
+entrypoint = "model/main_monkeypox.fred"

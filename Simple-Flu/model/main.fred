@@ -1,0 +1,17 @@
+comment doc {
+	A model of a respiratory disease outbreak.
+
+	Authors
+	-------
+	Claire Dickey : claire.dickey@epistemix.com
+	Tommy Nelson : tommy.nelson@epistemix.com
+}
+
+simulation {
+    locations =  Kewaunee_County_WI
+    start_date = 2022-Jan-01
+    end_date = 2022-Jul-01
+}
+
+include model/simpleflu.fred
+

@@ -1,0 +1,138 @@
+
+comment {
+
+		File: bathhouse.fred
+		Condition: BATHHOUSE
+
+		A place type called BathHouse is declared and a list of sites
+		is read in on startup.
+
+		The BATHHOUSE condition applies only to MSM agents. Some
+		fraction of MSM agents attend bathhouses.  The specific
+		bathhouse visited is selected at random each time. The time
+		between visits also varies randonly.
+
+		During a visit, the agent selects another visitor randomly for
+		an encounter.
+
+		The bathhouse group agent keeps track of the number of weekly
+		visits and encounters.
+		
+		Future work: Each encounter may result in monkeypox
+		transmission. The probability of transmission should depend on
+		each agent's current state in a separate MONKEYBOX condition,
+		which may set the agent's transmissibility, susceptibility,
+		vaccination status, etc.
+
+		Possible intervention targets:
+		- the fraction of msm who visit bathhouses.
+		- the transmissibility within a given bathhouse.
+		- the agent's preferences for safer bathhouses.
+		- the closure of unsafe bathhouses.
+		- vaccine uptake
+		- use of preventive measures by individual agents
+
+}
+
+place BathHouse {
+	has_group_agent = 1
+}
+
+variables {
+	# used for reporting by the bathhouse group agent
+	agent numeric attendees
+	agent numeric encounters
+    agent numeric other_agent_sus
+
+	# for future use: the bathhouse-specific transmissibility
+	agent numeric bathhouse_trans
+
+	# used by the bathhouse visitor (shared because only needed one at a time)
+	shared list candidates
+	shared numeric candidate
+	shared numeric position
+}
+
+startup {
+	read_place_file($FRED_PROJECT/data/bathhouse_transmission_MPOX_OUTBREAK.txt, BathHouse)
+}
+
+condition BATHHOUSE {
+	start_state = Start
+	group_start_state = Group_Start
+
+	state Start {
+		wait(0)
+		# each msm agent visits bathhouses with prob 0.5 (could be individualized)
+		if (msm == 1) then next(Wait) with prob(0.05)
+		default(Excluded)
+	}
+
+	state Wait {
+	    # agent waits 3.5 days plus or minus 1 day between visits (could be individualized)
+		wait(normal(24*4, 24))
+        if (last_week_cases >= 2) then next(Wait) with prob(0.5)
+		default(Visit)
+	}
+
+	state Visit {
+
+		# the agent selects a bathhouse at random (could be made based or distance or safety etc.)
+		join(BathHouse)
+
+		# record the attendance at the front door
+		tell(BathHouse, attendees, ask(BathHouse, attendees) + 1)
+
+		# the candidates are all current members (all are assumed present)
+		candidates = members(BathHouse)
+
+		if (length(candidates) > 2) then {
+
+		    # select a candidate at random
+			position = int(uniform(0, length(candidates)))
+			candidate = candidates[position]
+
+			# make sure candidate is distinct from self
+			while (id == candidate) do {
+				position = int(uniform(0, length(candidates)))
+				candidate = candidates[position]
+			}
+
+			# record the encounter at the bathhouse
+			tell(BathHouse, encounters, ask(BathHouse, encounters) + 1)
+            # calculate the probability that the encounter leads to transmission
+            print_event_file(encounters.txt, "Encounter between ", id, " and ", candidate)
+			
+		}
+        other_agent_sus = ask(candidate,mpxsus)
+        if (bernoulli(mpxtrans*other_agent_sus*mpxtransprob) == 1) then send(candidate,MPOX,Exposed)
+
+        # could use send here to have people immediately leave after an encounter
+		wait(1)
+		default(End_Visit)
+	}
+
+	state End_Visit {
+        # stop membership upon leaving
+		quit(BathHouse)
+		wait(0)
+		next(Wait)
+	}
+
+	state Group_Start {
+		attendees = 0
+		encounters = 0
+		wait(0)
+		next(Report)
+	}
+
+	state Report {
+		print_event_file(report.txt,"BathHouse ", id, " had ", attendees, " attendees and ", encounters, " encounters in the last week")
+		attendees = 0
+		encounters = 0
+		wait(24*7)
+		next(Report)
+	}
+
+}
+

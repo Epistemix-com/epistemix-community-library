@@ -1,0 +1,119 @@
+variables {
+	agent list household_pool
+	agent list workplace_pool
+	agent list school_pool
+	agent list bg_pool
+	agent list ct_pool
+	agent list county_pool
+	
+	shared numeric person # table loop
+	
+	agent list new_node
+	agent numeric interaction_weight
+	
+	## network output
+	shared numeric g_degree
+	shared numeric connection
+
+	shared list degree_list
+	shared list_table network_links
+
+	degree_list.output = 1	
+	network_links.output = 1
+}
+
+
+network Physical {
+	is_directed = 0
+	output_interval = 0
+}
+
+condition REPORT_CONNECTIONS {
+	start_state = WaitForJoins
+	
+	state WaitForJoins {
+		wait(3*24)
+		default(ReportJoins)
+	}
+	
+	state ReportJoins {
+		g_degree = length(links(Physical))
+		if (length(degree_list) <= g_degree) then degree_list[g_degree] = 0
+		
+		degree_list[g_degree] = degree_list[g_degree] + 1
+		network_links[id] = list(links(Physical))
+		
+		for (connection, links(Physical)) do {
+			print_csv(network_edges.csv, id, connection, get_weight(Physical, id, connection))
+		}
+		
+		wait(0)
+		default(Excluded)
+	}
+}
+
+condition MAKE_CONNECTIONS {
+	start_state = Start
+	
+	state Start {
+		household_pool = members(Household)
+		workplace_pool = members(Workplace)
+		school_pool = members(School)
+		bg_pool = members(Block_Group)
+		ct_pool = members(Census_Tract)
+		county_pool = members(County)
+		
+		## if there are household members add them all to network
+		if (length(household_pool)>0) then {
+			add_edge_to(Physical, household_pool)
+			for (person, household_pool) do {
+				set_weight_to(Physical, person, uniform(0.5,1))
+			}
+		}
+		
+		wait(0)
+		default(Daily_Connections)
+	}
+	
+	state Daily_Connections {
+		
+		if (length(workplace_pool)>0) then {
+			new_node = sample_without_replacement(workplace_pool,1)
+			interaction_weight = uniform(0,0.7)
+			add_edge_to(Physical, new_node)
+			set_weight_to(Physical, new_node, interaction_weight)
+		}
+		
+		if (length(school_pool)>0) then {
+			new_node = sample_without_replacement(school_pool,1)
+			interaction_weight = uniform(0,0.7)
+			add_edge_to(Physical, new_node)
+			set_weight_to(Physical, new_node, interaction_weight)
+		}
+		
+		if (length(bg_pool)>0) then {
+			new_node = sample_without_replacement(bg_pool,1)
+			interaction_weight = uniform(0,0.5)
+			add_edge_to(Physical, new_node)
+			set_weight_to(Physical, new_node, interaction_weight)
+		}
+		
+		if (length(ct_pool)>0) then {
+			new_node = sample_without_replacement(ct_pool,1)
+			interaction_weight = uniform(0,0.5)
+			add_edge_to(Physical, new_node)
+			set_weight_to(Physical, new_node, interaction_weight)
+		}
+		
+		if (length(county_pool)>0) then {
+			new_node = sample_without_replacement(county_pool,1)
+			interaction_weight = uniform(0,0.5)
+			add_edge_to(Physical, new_node)
+			set_weight_to(Physical, new_node, interaction_weight)
+		}
+		
+		wait(24)
+		if (date==20230104) then next(Excluded)
+		default(Daily_Connections)
+	}
+}
