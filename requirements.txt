@@ -1,0 +1,6 @@
+folium
+matplotlib
+numpy
+pandas
+seaborn
+plotly==5.9.0
