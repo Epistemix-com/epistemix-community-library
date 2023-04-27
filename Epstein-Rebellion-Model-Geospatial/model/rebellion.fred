@@ -47,7 +47,6 @@ variables {
 	shared numeric loc
 	
 	agent list dist
-	agent table dist_to_neighbors
 	agent numeric max_dist
 	
 	agent list tmp1
