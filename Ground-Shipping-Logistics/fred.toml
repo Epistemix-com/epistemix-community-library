@@ -1,7 +1,6 @@
 [metadata]
 name = "Ground Shipping Logistics"
-description = """
-This model represents a ground transportation network. Cities represent nodes in the network and roads are edges. A table of trucks agents is read in at the beginning of the simulation. There are no human agents in the model. """
+description = "This model represents a ground transportation network. Cities represent nodes in the network and roads are edges. A table of trucks agents is read in at the beginning of the simulation. There are no human agents in the model."
 categories = [
     "Infrastructure"
 ]
