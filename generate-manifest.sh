@@ -1,5 +1,7 @@
 #!/bin/sh
 
+pip install tomlq
+
 touch manifest.toml && echo "" > manifest.toml
 
 for file in */fred.toml; do

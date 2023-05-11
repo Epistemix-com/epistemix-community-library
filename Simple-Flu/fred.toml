@@ -1,7 +1,6 @@
 [metadata]
 name = "Simple Flu"
-description = """
-A model that represents the spread of influenza throughout a population, characterized with a compartmental Symptomatic-Exposed-Infectious-Recovered (SEIR) model. Agents can either be symptomatic or asymptomatic when infectious."""
+description = "A model that represents the spread of influenza throughout a population, characterized with a compartmental Symptomatic-Exposed-Infectious-Recovered (SEIR) model. Agents can either be symptomatic or asymptomatic when infectious."
 categories = [
     "Population Health"
 ]

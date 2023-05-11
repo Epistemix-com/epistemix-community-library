@@ -1,10 +1,6 @@
 [metadata]
 name = "Schelling Housing Model"
-description = """
-The Schelling model of racial segregation in housing. This is a classic ABM
-that demonstrates how even slight preferences among a population for living
-next to others who are similar to themselves can lead to highly segregated
-neighborhoods."""
+description = "The Schelling model of racial segregation in housing. This is a classic ABM that demonstrates how even slight preferences among a population for living next to others who are similar to themselves can lead to highly segregated neighborhoods."
 categories = [
     "Social Science",
     "Policy Analysis"
