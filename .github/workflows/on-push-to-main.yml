@@ -32,4 +32,4 @@ jobs:
         run: aws s3 cp manifest.toml s3://model-library-assets
       
       - name: Copy all images and fred.toml files to S3
-        run: aws s3 cp . s3://model-library-assets --recursive --exclude "*" --include "*/*.png" --include "*/*.jpg" --include "*/fred.toml"
+        run: aws s3 cp . s3://model-library-assets --recursive --exclude "*" --include "*/*.png" --include "*/*.jpg" --include "*/fred.toml" --include "*/README.md"
