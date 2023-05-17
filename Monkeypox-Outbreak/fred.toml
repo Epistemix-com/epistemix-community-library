@@ -12,6 +12,7 @@ fred_versions = [
   ">=8.4",
   "<9"
 ]
+banner = "./images/orange_epistemix.png"
 
 [run_options]
 src_dir = "source"
