@@ -19,6 +19,9 @@ The transmissible condition that represents a simple flu. The starting number of
 
 Agents who enter the Exposed state of RESP_DISEASE also record where they received their exposure (e.g., workplace, household, etc).
 
+![Dot Placeholder](./images/placeholder.png)
+![No Dot Placeholder](images/placeholder.png)
+
 ## Key outputs
 
 Traditional epi curves can be created from default outputs from the RESP_DISEASE condition, which records how many agents are newly entering a state each. To get geospatial information on where infections are occuring, agents record their exposure in `exposure_locs.csv`, along with the relevant lat/lon.
