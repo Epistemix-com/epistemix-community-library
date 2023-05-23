@@ -29,4 +29,4 @@ jobs:
         run: aws s3 rm s3://model-library-assets --recursive
       
       - name: Copy all images and fred.toml files to S3
-        run: aws s3 cp . s3://model-library-assets --recursive
+        run: aws s3 cp . s3://model-library-assets --recursive --exclude ".git" --exclude ".github" --exclude ".gitignore"
