@@ -1,4 +1,0 @@
-#! /bin/bash
-
-pip-compile -o requirements.txt requirements.in
-pip-compile -o requirements_dev.txt requirements_dev.in
