@@ -1,0 +1,7 @@
+#! /bin/bash
+
+docker build -t epistemix-community-library:dev .
+docker run -it \
+    -v $(pwd):/epistemix-community-library \
+    epistemix-community-library:dev \
+    /bin/bash
