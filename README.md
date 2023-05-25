@@ -24,3 +24,7 @@ dependencies of our named dependencies) in `requirements.txt` from the abstract
 2. From within the `dev` container run `scripts/update-requirements`
 3. Commit changes to both `requirements.in` and `requirements.txt` to version
    control.
+
+## Manifest
+
+The `generate-manifest.sh` file is executed when a commit is pushed to the `main` branch. This generates a file called `manifest.toml`, which is then stored in the `model-library-assets` S3 bucket and is used by the API. It is not stored in GitHub.
