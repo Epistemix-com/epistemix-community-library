@@ -1,0 +1,35 @@
+variables {
+    shared table prob_participate_by_insurance_status
+    
+    agent numeric is_participating
+}
+
+condition INIT_PARTICIPATION_GLOBALS {
+    meta_start_state = InitProbParticipate
+    
+    state InitProbParticipate {
+        read_table(prob_participate_by_insurance_status, data/prob_participate_by_insurance_status.csv, 0, 1)
+        wait(0)
+        next(Excluded)
+    }
+}
+
+condition CHECK_PARTICIPATION {
+    start_state = Wait
+    
+    state Wait {
+        wait(2)
+        next(SetParticipation)
+    }
+    
+    state SetParticipation {
+        if ((uniform(0, 1) < prob_participate_by_insurance_status[insurance_status_id]) & (current_state(HEALTH_STATUS) == HEALTH_STATUS.Overweight)) then {
+            is_participating = 1
+        }
+        else {
+            is_participating = 0
+        }
+        wait(0)
+        next(Excluded)
+    }
+}

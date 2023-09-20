@@ -1,2 +1,2 @@
-manifest.toml
+data/*.csv
 */.ipynb_checkpoints

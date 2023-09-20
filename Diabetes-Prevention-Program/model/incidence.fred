@@ -1,0 +1,49 @@
+startup {
+    open_csv(diabetes_incidence.csv, "agent_id", "sim_day", "is_participating", "insurance_status_id", "Census_Tract")
+}
+
+variables {
+    shared table incidence_per_person_per_year
+}
+
+condition INIT_INCIDENCE_GLOBALS {
+    meta_start_state = InitIncidence
+    
+    state InitIncidence {
+        read_table(incidence_per_person_per_year, data/incidence_per_person_per_year.csv, 0, 4)
+        wait(0)
+        next(Excluded)
+    }
+}
+
+condition DIABETES {
+    start_state = Wait
+    
+    state Wait {
+        wait(3)
+        next(CheckOverweight)
+    }
+    
+    state CheckOverweight {
+        if (current_state(HEALTH_STATUS) == HEALTH_STATUS.Overweight) then next(CheckIncidence)
+        wait(0)
+        default(Excluded)
+    }
+    
+    state CheckIncidence {
+        if (uniform(0, 1) < incidence_per_person_per_year[is_participating]) then next(Diabetic)
+        wait(0)
+        default(NotDiabetic)
+    }
+    
+    state Diabetic {
+        print_csv(diabetes_incidence.csv, id, sim_day, is_participating, insurance_status_id, Census_Tract)
+        wait()
+        next()
+    }
+    
+    state NotDiabetic {
+        wait(9125)  # 1 year
+        next(CheckIncidence)
+    }
+}

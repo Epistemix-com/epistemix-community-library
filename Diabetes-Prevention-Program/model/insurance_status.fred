@@ -1,0 +1,76 @@
+variables {
+    agent numeric tmp_insurance_rand_var
+    agent numeric insurance_status_id  # 0 = no insurance, 1 = medicaid, 2 = medicare, 3 = private
+    agent numeric my_prob_no_insurance
+    agent numeric my_prob_medicaid_insurance
+    agent numeric my_prob_medicare_insurance
+    agent numeric my_prob_private_insurance
+}
+
+use model/Read_Attribute {
+    input_file = data/insurance_status.csv
+    attribute = my_prob_no_insurance
+    column = 1
+    independent = Census_Tract
+    min_independent_column = 0
+    max_independent_column = 0
+}
+
+use model/Read_Attribute {
+    input_file = data/insurance_status.csv
+    attribute = my_prob_medicaid_insurance
+    column = 2
+    independent = Census_Tract
+    min_independent_column = 0
+    max_independent_column = 0
+}
+
+use model/Read_Attribute {
+    input_file = data/insurance_status.csv
+    attribute = my_prob_medicare_insurance
+    column = 3
+    independent = Census_Tract
+    min_independent_column = 0
+    max_independent_column = 0
+}
+
+use model/Read_Attribute {
+    input_file = data/insurance_status.csv
+    attribute = my_prob_private_insurance
+    column = 4
+    independent = Census_Tract
+    min_independent_column = 0
+    max_independent_column = 0
+}
+
+condition INSURANCE_STATUS {
+    start_state = Wait
+    
+    state Wait {
+        wait(1)
+        next(SetInsuranceStatus)
+    }
+    
+    state SetInsuranceStatus {
+        tmp_insurance_rand_var = uniform(0, 1)
+        # print_file(ins_status.csv, my_prob_no_insurance)
+        if (tmp_insurance_rand_var < my_prob_no_insurance) then { 
+            insurance_status_id = 0
+        }
+        else {
+            if (tmp_insurance_rand_var < (my_prob_no_insurance + my_prob_medicaid_insurance)) then {
+                insurance_status_id = 1
+            }
+            else {
+                if (tmp_insurance_rand_var < (my_prob_no_insurance + my_prob_medicaid_insurance + my_prob_medicare_insurance)) then {
+                    insurance_status_id = 2
+                }
+                else {
+                    insurance_status_id = 3
+                }
+            }
+        }
+        wait(0)
+        next(Excluded)
+    }
+}

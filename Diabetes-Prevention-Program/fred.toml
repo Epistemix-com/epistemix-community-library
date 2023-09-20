@@ -1,0 +1,19 @@
+[metadata]
+name = "Diabetes Prevention Program Participation"
+description = "This model explores the effect of overweight individuals participating in a diabetes prevention program"
+categories = [
+    "Population Health"
+]
+authors = [
+    "Andrew Lane <andrew.lane@epistemix.com>"
+]
+version = "0.1.0"
+fred_versions = [
+  ">=8.4",
+  "<9"
+]
+banner = "./images/navy_epistemix.png"
+
+[run_options]
+src_dir = "source"
+entrypoint = "model/main.fred"

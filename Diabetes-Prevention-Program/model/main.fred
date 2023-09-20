@@ -1,0 +1,84 @@
+comment doc {
+    A model of a Diabetes Prevention Program adoption.
+
+    Authors
+    -------
+    Andrew Lane : andrew.lane@epistemix.com
+}
+
+simulation {
+    locations = Elko_County_NV
+    #Fallon_NV_MSA, Las_Vegas-Paradise_NV, Douglas_County_NV, Esmeralda_County_NV, Eureka_County_NV, Humboldt_County_NV, Lander_County_NV, Lincoln_County_NV, Lyon_County_NV, Mineral_County_NV, Nye_County_NV, Pershing_County_NV, Storey_County_NV, Washoe_County_NV, White_Pine_County_NV, Carson_City_NV
+    start_date = 2023-Jan-01
+    end_date = 2028-Dec-31
+}
+
+variables {
+    agent numeric sex
+    agent numeric race
+    agent numeric income
+    agent numeric my_prob_overweight
+}
+
+use model/Read_Attribute {
+    input_file = data/prob_overweight_obese.csv
+    attribute = my_prob_overweight
+    column = 4
+    min_age_column = 2
+    max_age_column = 3
+    sex_column = 0
+    race_column = 1
+}
+
+condition INIT_AGENT {
+    start_state = QuitIrrelevantGroups
+    
+    state QuitIrrelevantGroups {
+        # Model only requires attendance at Census_Tract
+        quit(School)
+        quit(Block_Group)
+        quit(Household)
+        quit(County)
+        quit(State)
+        quit(Prison)
+        quit(Nursing_Home)
+        quit(College_Dorm)
+        quit(Barracks)
+        wait(0)
+        next(Excluded)
+    }
+}
+
+
+condition HEALTH_STATUS {
+    # Initially assign agents to be healthy or overweight based
+    # on demographically stratified probabilities. Wait indefinitely in
+    # those states until notified to switch.
+    start_state = Wait
+    
+    state Wait {
+        wait(1)
+        next(InitCheckHealthy)
+    }
+    
+    state InitCheckHealthy {
+        next(Overweight) with prob(my_prob_overweight)
+        wait(0)
+        default(Healthy)   
+    }
+    
+    state Healthy {
+        wait()
+        next()
+    }
+    
+    state Overweight {
+        wait()
+        next()
+    }
+
+}
+
+include model/insurance_status.fred
+include model/program_participation.fred
+include model/incidence.fred

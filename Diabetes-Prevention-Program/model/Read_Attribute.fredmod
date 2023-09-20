@@ -1,0 +1,278 @@
+
+prototype Read_Attribute {
+    input_file = FILENAME.csv
+    attribute = VARIABLE
+    column = -1
+    sex_column = 99999
+    race_column = 99999
+    min_age_column = 99999
+    max_age_column = 99999
+    min_income_column = 99999
+    max_income_column = 99999
+    independent = 0
+    min_independent_column = 99999
+    max_independent_column = 99999
+    delay = 0
+}
+
+
+variables {
+    shared list min_age_list_$$$
+    shared list max_age_list_$$$
+    shared list sex_list_$$$
+    shared list race_list_$$$
+    shared list min_income_list_$$$
+    shared list max_income_list_$$$
+    shared list min_independent_list_$$$
+    shared list max_independent_list_$$$
+
+    shared list value_list_$$$
+    shared attribute_$$$
+
+    min_age_list_$$$ = read($input_file$,$min_age_column$)
+    max_age_list_$$$ = read($input_file$,$max_age_column$)
+    sex_list_$$$ = read($input_file$,$sex_column$)
+    race_list_$$$ = read($input_file$,$race_column$)
+    min_income_list_$$$ = read($input_file$,$min_income_column$)
+    max_income_list_$$$ = read($input_file$,$max_income_column$)
+    min_independent_list_$$$ = read($input_file$,$min_independent_column$)
+    max_independent_list_$$$ = read($input_file$,$max_independent_column$)
+
+    value_list_$$$ = read($input_file$,$column$)
+
+    shared list index_list_$$$
+
+}
+
+
+comment MD {
+
+### The `Read_Attribute` Module
+
+#### Summary
+
+The `Read_Attribute` module lets the user augment the set of
+attributes in the synthetic population.  The module sets a specified
+personal variable (called the `attribute`) for selected agents in the
+synthetic population based on an external file.
+
+#### Using the Module
+
+To use this module, include the following code block and specify the
+desired parameter values in the block.  The first three arguments are
+required.  Unneeded parameters should be omitted.
+
+
+'''fred
+use $FRED_PROJECT/Read_Attribute {
+    input_file = <filename>
+    attribute = <name_of_attribute>
+    column = <column_number>
+    sex_column = <column_number>
+    race_column = <column_number>
+    min_age_column = <column_number>
+    max_age_column = <column_number>
+    min_income_column = <column_number>
+    max_income_column = <column_number>
+    independent = <independent_variable_or_expression>
+    min_independent_column = <column_number>
+    max_independent_column = <column_number>
+    delay = <delay_in_hours>
+}
+'''
+
+#### Parameter Definitions
+
+* `input_file` = the name of the external file setting the
+  attribute. Each line consists of comma-separated values. Typically
+  all but one of the columns represent constraints, and one column
+  represents the dependent variable (the `attribute`).
+
+* `attribute` = the name of a personal variable whose value is set
+  according to the first line in the file whose constrainmts are
+  satisfied for a given agent.
+
+* `column` = the column in the file with the attribute value.
+
+* `sex_column` = the column in the file containing the sex constraint
+  (optional).
+
+* `race_column` = the column in the file containing the race
+  constraint (optional).
+
+* `min_age_column` = the column in the file containing a minimum age
+  constraint (optional).
+
+* `max_age_column` = the column in the file containing a maximum age
+  constraint (optional).
+
+* `min_income_column` = the column in the file containing a minimum
+  household income constraint (optional).
+
+* `max_income_column` = the column in the file containing a maximum
+  household income constraint (optional).
+
+* `independent` = an expression representing an independent quantity
+  used as a constraint (optional).
+
+* `min_independent_column` = the column in the file containing a
+  minimum value for the constraint expression (optional).
+
+* `max_independent_column` = the column in the file containing a
+  maximum value for the constraint expression (optional).
+
+* `delay` = a time delay in simulation hours before evaluating the
+  constraints (optional).
+
+#### Effects of the Module
+
+Each agent finds the first row in the input file for which all the
+constraints are satisfied. The agent's attribute variable is set to
+the value of the attribute on that line.
+
+The `delay` can be used to prevent the application of the module until
+some agent values are set. For example, the `delay` can be used when
+there are several attributes being set by this module, allowing the
+first attribute to be used as an independent variable in setting the
+second attribute, and so on.
+
+}
+
+
+condition DATA_$attribute$_$column$ {
+    # agent_records = 1
+    start_state = Start
+
+    state Start {
+        wait($delay$)
+        default(Start_Match)
+    }
+
+    state Start_Match {
+        index_list_$$$ = range_list(length(value_list_$$$))
+        # length_$$$ = length(index_list_$$$)
+        wait(0)
+        default(Check_Min_Age)
+    }
+
+    state Check_Min_Age {
+        wait(0)
+        if (99999 != $min_age_column$) then next(Match_Min_Age)
+        default(Check_Max_Age)
+    }
+
+    state Check_Max_Age {
+        wait(0)
+        if (99999 != $max_age_column$) then next(Match_Max_Age)
+        default(Check_Sex)
+    }
+
+    state Check_Sex {
+        wait(0)
+        if (99999 != $sex_column$) then next(Match_Sex)
+        default(Check_Race)
+    }
+
+    state Check_Race {
+        wait(0)
+        if (99999 != $race_column$) then next(Match_Race)
+        default(Check_Min_Income)
+    }
+
+    state Check_Min_Income {
+        wait(0)
+        if (99999 != $min_income_column$) then next(Match_Min_Income)
+        default(Check_Max_Income)
+    }
+
+    state Check_Max_Income {
+        wait(0)
+        if (99999 != $max_income_column$) then next(Match_Max_Income)
+        default(Check_Min_Independent)
+    }
+
+    state Check_Min_Independent {
+        wait(0)
+        if (99999 != $min_independent_column$) then next(Match_Min_Independent)
+        default(Check_Max_Independent)
+    }
+
+    state Check_Max_Independent {
+        wait(0)
+        if (99999 != $max_independent_column$) then next(Match_Max_Independent)
+        default(Check_Match)
+    }
+
+    state Match_Min_Age {
+        index_list_$$$ = intersection(index_list_$$$, index_values(min_age_list_$$$, <= , age))
+        wait(0)
+        if (length(index_list_$$$) > 0) then next(Check_Max_Age)
+        default(Excluded)
+    }
+
+    state Match_Max_Age {
+        index_list_$$$ = intersection(index_list_$$$, index_values(max_age_list_$$$, >= , age))
+        wait(0)
+        if (length(index_list_$$$) > 0) then next(Check_Sex)
+        default(Excluded)
+    }
+
+    state Match_Sex {
+        index_list_$$$ = intersection(index_list_$$$, index_values(sex_list_$$$, == , sex))
+        wait(0)
+        if (length(index_list_$$$) > 0) then next(Check_Race)
+        default(Excluded)
+    }
+
+    state Match_Race {                
+        index_list_$$$ = intersection(index_list_$$$, index_values(race_list_$$$, == , race))
+        wait(0)
+        if (length(index_list_$$$) > 0) then next(Check_Min_Income)
+        default(Excluded)
+    }
+
+    state Match_Min_Income {                
+        index_list_$$$ = intersection(index_list_$$$, index_values(min_income_list_$$$, <= , ask(Household,income)))
+        wait(0)
+        if (length(index_list_$$$) > 0) then next(Check_Max_Income)
+        default(Excluded)
+    }
+
+    state Match_Max_Income {
+        index_list_$$$ = intersection(index_list_$$$, index_values(max_income_list_$$$, >= , ask(Household,income)))
+        wait(0)
+        if (length(index_list_$$$) > 0) then next(Check_Min_Independent)
+        default(Excluded)
+    }
+
+    state Match_Min_Independent {                
+        index_list_$$$ = intersection(index_list_$$$, index_values(min_independent_list_$$$, <= , $independent$))
+        wait(0)
+        if (length(index_list_$$$) > 0) then next(Check_Max_Independent)
+        default(Excluded)
+    }
+
+    state Match_Max_Independent {
+        index_list_$$$ = intersection(index_list_$$$, index_values(max_independent_list_$$$, >= , $independent$))
+        wait(0)
+        if (length(index_list_$$$) > 0) then next(Check_Match)
+        default(Excluded)
+    }
+
+    state Check_Match {
+        wait(0)
+        if (length(index_list_$$$) > 0) then next(Set_Attribute)
+        default(Excluded)
+    }
+
+    state Set_Attribute {
+        #   start_records()
+        #    age_$$$ = age
+        #     sex_$$$ = sex
+        #     race_$$$ = race
+        #     income_$$$ = income_of_Household
+        $attribute$ = select(value_list_$$$,select(index_list_$$$,0))
+        wait(0)
+        default(Excluded)
+    }
+}
