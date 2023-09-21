@@ -1,13 +1,30 @@
 from itertools import product
+from typing import NamedTuple
 
 import pandas as pd
 import geopandas as gpd
 
 import plotly.express as px
 from plotly.graph_objs import Figure
+import plotly.io as pio
 
 from epxexec.fred_job import FREDJob
 from epxexec.epxresults.run import FREDRun
+from epxexec.visual.utils import default_plotly_template
+
+pio.templates["epistemix"] = default_plotly_template()
+pio.templates.default = "epistemix"
+
+
+class MapboxConfig(NamedTuple):
+    mapstyle: str
+    token: str
+
+
+MAPBOX_CONFIG = MapboxConfig(
+    "mapbox://styles/pnowell/cl4n9fic8001i15mnfmozrt8j",
+    "pk.eyJ1IjoicG5vd2VsbCIsImEiOiJja201bHptMXkwZnQyMnZxcnFveTVhM2tyIn0.Pyarp9gHCON4reKvM2fZZg",
+)
 
 
 def get_state_block_groups_gdf(state_fips: str) -> gpd.GeoDataFrame:
@@ -104,26 +121,35 @@ def _regularize_block_groups(df: pd.DataFrame, all_block_groups: pd.Series):
 
 
 def plot_cume_diagnoses(
-    incidence_df: pd.DataFrame, block_group_gdf: gpd.GeoDataFrame, location_name: str
+    incidence_df: pd.DataFrame,
+    block_group_gdf: gpd.GeoDataFrame,
+    location_name: str,
+    center: None,
 ) -> Figure:
     earliest_year = incidence_df["calendar_year"].min()
-    return px.choropleth(
+    fig = px.choropleth_mapbox(
         data_frame=incidence_df,
         geojson=block_group_gdf,
         featureidkey="properties.block_group",
         locations="block_group",
         color="cume_n_diagnosed",
         animation_frame="calendar_year",
-        fitbounds="geojson",
+        animation_group="block_group",
         range_color=_get_value_range(incidence_df, "cume_n_diagnosed"),
         width=700,
-        height=500,
+        height=700,
+        center=center,
+        zoom=5,
         labels={
             "cume_n_diagnosed": r"Cumulative<br>diagnoses",
             "calendar_year": "Year",
         },
         title=f"Diabetes diagnoses in {location_name} since {earliest_year}",
     )
+    fig.update_layout(
+        mapbox_style=MAPBOX_CONFIG.mapstyle, mapbox_accesstoken=MAPBOX_CONFIG.token
+    )
+    return fig
 
 
 def _get_value_range(df: pd.DataFrame, var_name: str) -> tuple[int, int]:
