@@ -18,6 +18,9 @@ variables {
     agent numeric race
     agent numeric income
     agent numeric my_prob_overweight
+    
+    shared numeric program_available
+    program_available = 0
 }
 
 use model/Read_Attribute {
@@ -34,16 +37,13 @@ condition INIT_AGENT {
     start_state = QuitIrrelevantGroups
     
     state QuitIrrelevantGroups {
-        # Model only requires attendance at Census_Tract
+        # Model only requires attendance at Census_Tract and Block_Group. As group agents
+        # collect these values via their quarters, these agents should also attend Nursing_Homes,
+        # Collect_Dorms, Barracks, and Prisons.
         quit(School)
-        quit(Block_Group)
         quit(Household)
         quit(County)
         quit(State)
-        quit(Prison)
-        quit(Nursing_Home)
-        quit(College_Dorm)
-        quit(Barracks)
         wait(0)
         next(Excluded)
     }

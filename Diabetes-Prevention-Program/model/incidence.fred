@@ -1,5 +1,5 @@
 startup {
-    open_csv(diabetes_incidence.csv, "agent_id", "sim_day", "is_participating", "insurance_status_id", "Census_Tract")
+    open_csv(diabetes_incidence.csv, "agent_id", "sim_day", "is_participating", "insurance_status_id", "census_tract", "block_group")
 }
 
 variables {
@@ -37,7 +37,7 @@ condition DIABETES {
     }
     
     state Diabetic {
-        print_csv(diabetes_incidence.csv, id, sim_day, is_participating, insurance_status_id, Census_Tract)
+        print_csv(diabetes_incidence.csv, id, sim_day, is_participating, insurance_status_id, Census_Tract, Block_Group)
         wait()
         next()
     }

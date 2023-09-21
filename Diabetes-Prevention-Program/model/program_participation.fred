@@ -19,7 +19,15 @@ condition CHECK_PARTICIPATION {
     
     state Wait {
         wait(2)
-        next(SetParticipation)
+        next(CheckProgramAvailable)
+    }
+
+    state CheckProgramAvailable {
+        # Whether or not any agent can participate is toggled by the global
+        # `program_available` variable
+        if (program_available == 1) then next(SetParticipation)
+        wait(0)
+        default(Excluded)
     }
     
     state SetParticipation {
