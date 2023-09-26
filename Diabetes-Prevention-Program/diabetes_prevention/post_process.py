@@ -7,21 +7,6 @@ import geopandas as gpd
 
 from epxexec.fred_job import FREDJob
 from epxexec.epxresults.run import FREDRun
-from epxexec.visual.utils import default_plotly_template
-
-pio.templates["epistemix"] = default_plotly_template()
-pio.templates.default = "epistemix"
-
-
-class MapboxConfig(NamedTuple):
-    mapstyle: str
-    token: str
-
-
-MAPBOX_CONFIG = MapboxConfig(
-    "mapbox://styles/pnowell/cl4n9fic8001i15mnfmozrt8j",
-    "pk.eyJ1IjoicG5vd2VsbCIsImEiOiJja201bHptMXkwZnQyMnZxcnFveTVhM2tyIn0.Pyarp9gHCON4reKvM2fZZg",
-)
 
 
 def get_state_block_groups_gdf(state_fips: str) -> gpd.GeoDataFrame:
