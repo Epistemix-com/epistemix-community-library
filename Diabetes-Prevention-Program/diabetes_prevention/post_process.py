@@ -33,55 +33,69 @@ def _format_block_group_shp(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     )
 
 
-def process_diabetes_incidence_output(
-    job: FREDJob, all_block_groups: pd.Series, earliest_year: int
+class VariableMeta(NamedTuple):
+    varname: str
+    filename: str
+
+
+def results_df(
+    job: FREDJob,
+    variables: Iterable[VariableMeta],
+    all_block_groups: pd.Series,
+    earliest_year: int,
 ) -> pd.DataFrame:
-    """Generate post-processed table using FRED csv output file
-    'diabetes_incidence.csv'.
-    """
-
-    def process_single_run(run: FREDRun, run_id: int) -> pd.DataFrame:
-        return (
-            job.runs[run_id]
-            .get_csv_output("diabetes_incidence.csv")
-            .pipe(
-                lambda df: (
-                    df.merge(
-                        df["sim_day"]
-                        .value_counts()
-                        .sort_index()
-                        .to_frame()
-                        .reset_index()
-                        .rename_axis("sim_year")
-                        .reset_index()
-                        .loc[:, ["sim_year", "sim_day"]],
-                        on="sim_day",
-                    )
+    return (
+        pd.concat(
+            [
+                (
+                    _summarize_observation_csv(r, v.filename)
+                    .pipe(_regularize_block_groups, all_block_groups)
+                    .assign(variable=v.varname)
+                    .assign(run_id=i)
                 )
-            )
-            .assign(calendar_year=lambda df: df["sim_year"] + earliest_year)
-            .assign(block_group=lambda df: df["block_group"].astype(str))
-            # Exclude agents that don't have a census tract (agents living
-            # in group quarters)
-            .pipe(lambda df: df[df["block_group"] != 0])
-            .groupby(["calendar_year", "block_group"])
-            .size()
-            .rename("n_diagnosed")
-            .reset_index()
-            .pipe(_regularize_block_groups, all_block_groups)
-            .groupby("block_group", as_index=False)
-            .apply(
-                lambda df: (
-                    df.sort_values(by="calendar_year").assign(
-                        cume_n_diagnosed=lambda df: df["n_diagnosed"].cumsum()
-                    )
-                )
-            )
-            .reset_index(drop=True)
-            .assign(run_id=run_id)
+                for i, r in job.runs.items()
+                for v in variables
+            ]
         )
+        .assign(calendar_year=lambda df: df["sim_year"] + earliest_year)
+        .loc[:, ["run_id", "block_group", "calendar_year", "variable", "value"]]
+        .reset_index(drop=True)
+    )
 
-    return pd.concat([process_single_run(run, i + 1) for i, run in enumerate(job.runs)])
+
+def _summarize_observation_csv(run: FREDRun, csv_filename: str) -> pd.DataFrame:
+    """For a given FRED run and csv output file, summarize the number of
+    observations in the csv file by block group.
+
+    Useful in situations where an agent writes a line to a file each
+    under certain conditions in a model.
+    """
+    return (
+        run.get_csv_output(csv_filename)
+        .pipe(
+            lambda df: (
+                df.merge(
+                    df["sim_day"]
+                    .value_counts()
+                    .sort_index()
+                    .to_frame()
+                    .reset_index()
+                    .rename_axis("sim_year")
+                    .reset_index()
+                    .loc[:, ["sim_year", "sim_day"]],
+                    on="sim_day",
+                )
+            )
+        )
+        # Exclude agents that don't have a census tract (agents living
+        # in group quarters)
+        .pipe(lambda df: df[df["block_group"] != 0])
+        .assign(block_group=lambda df: df["block_group"].astype(str))
+        .groupby(["sim_year", "block_group"])
+        .size()
+        .rename("value")
+        .reset_index()
+    )
 
 
 def _regularize_block_groups(df: pd.DataFrame, all_block_groups: pd.Series):
@@ -89,16 +103,15 @@ def _regularize_block_groups(df: pd.DataFrame, all_block_groups: pd.Series):
     for which no incidence was observed in the simulation have 0
     reported, rather than a missing row.
     """
-    earliest_year = df["calendar_year"].min()
-    latest_year = df["calendar_year"].max()
+    earliest_year = df["sim_year"].min()
+    latest_year = df["sim_year"].max()
     return (
         pd.DataFrame.from_records(
             product(all_block_groups, range(earliest_year, latest_year + 1)),
-            columns=["block_group", "calendar_year"],
+            columns=["block_group", "sim_year"],
         )
-        .merge(df, how="left", on=["block_group", "calendar_year"])
+        .merge(df, how="left", on=["block_group", "sim_year"])
         .fillna(0)
-        .assign(n_diagnosed=lambda df: df["n_diagnosed"].astype(int))
     )
 
 
@@ -123,26 +136,30 @@ def generate_summary_results_file(
 
 def _get_scenario_data(scenario: Scenario, block_groups) -> FREDJob:
     job = FREDJob(job_key=scenario.job_key)
+    variables = (
+        VariableMeta("n_diagnosed", "diabetes_incidence.csv"),
+        VariableMeta("n_participating", "program_participation.csv"),
+    )
     return (
-        process_diabetes_incidence_output(job, block_groups, 2023)
+        results_df(job, variables, block_groups, 2023)
         .pipe(_average_over_runs)
         .assign(scenario=scenario.name)
     )
 
 
 def _average_over_runs(df: pd.DataFrame) -> pd.DataFrame:
-    index_cols = ["block_group", "calendar_year"]
+    index_cols = ["block_group", "calendar_year", "variable"]
     return (
-        df.groupby(index_cols)["n_diagnosed"]
+        df.groupby(index_cols)["value"]
         .mean()
         .reset_index()
-        .assign(n_diagnosed=lambda df: df["n_diagnosed"].round().astype(int))
-        .groupby("block_group", as_index=False)
+        .assign(value=lambda df: df["value"].round().astype(int))
+        .groupby(["block_group", "variable"], as_index=False)
         # Recalculate cumulative over averaged values
         .apply(
             lambda df: (
                 df.sort_values(by="calendar_year").assign(
-                    cume_n_diagnosed=lambda df: df["n_diagnosed"].cumsum()
+                    cume_value=lambda df: df["value"].cumsum()
                 )
             )
         )
