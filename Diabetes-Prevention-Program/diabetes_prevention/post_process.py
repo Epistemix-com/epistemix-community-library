@@ -1,12 +1,9 @@
 from itertools import product
-from typing import NamedTuple
+from pathlib import Path
+from typing import Iterable, NamedTuple
 
 import pandas as pd
 import geopandas as gpd
-
-import plotly.express as px
-from plotly.graph_objs import Figure
-import plotly.io as pio
 
 from epxexec.fred_job import FREDJob
 from epxexec.epxresults.run import FREDRun
@@ -120,43 +117,48 @@ def _regularize_block_groups(df: pd.DataFrame, all_block_groups: pd.Series):
     )
 
 
-def plot_cume_diagnoses(
-    incidence_df: pd.DataFrame,
-    block_group_gdf: gpd.GeoDataFrame,
-    location_name: str,
-    center: None,
-) -> Figure:
-    earliest_year = incidence_df["calendar_year"].min()
-    fig = px.choropleth_mapbox(
-        data_frame=incidence_df,
-        geojson=block_group_gdf,
-        featureidkey="properties.block_group",
-        locations="block_group",
-        color="cume_n_diagnosed",
-        animation_frame="calendar_year",
-        animation_group="block_group",
-        range_color=_get_value_range(incidence_df, "cume_n_diagnosed"),
-        width=700,
-        height=700,
-        center=center,
-        zoom=5,
-        labels={
-            "cume_n_diagnosed": r"Cumulative<br>diagnoses",
-            "calendar_year": "Year",
-        },
-        title=f"Diabetes diagnoses in {location_name} since {earliest_year}",
-    )
-    fig.update_layout(
-        mapbox_style=MAPBOX_CONFIG.mapstyle, mapbox_accesstoken=MAPBOX_CONFIG.token
-    )
-    return fig
+class Scenario(NamedTuple):
+    name: str
+    job_key: str
 
 
-def _get_value_range(df: pd.DataFrame, var_name: str) -> tuple[int, int]:
-    def round_to_nearest_n(x, n=10):
-        return int(n * round(float(x) / n))
+def generate_summary_results_file(
+    filename: Path, scenarios: Iterable[Scenario], state_fips: str
+):
+    """Generate final results output file for a given state.
 
+    Outputs are at the block group level and include the following variables:
+    * n_diagnosed
+    * cume_n_diagnosed
+    """
+    block_groups: pd.Series = get_state_block_groups_gdf(state_fips)["block_group"]
+    df = pd.concat([_get_scenario_data(s, block_groups) for s in scenarios])
+    df.to_csv(filename, index=False)
+
+
+def _get_scenario_data(scenario: Scenario, block_groups) -> FREDJob:
+    job = FREDJob(job_key=scenario.job_key)
     return (
-        round_to_nearest_n(df[var_name].min()),
-        round_to_nearest_n(df[var_name].max()),
+        process_diabetes_incidence_output(job, block_groups, 2023)
+        .pipe(_average_over_runs)
+        .assign(scenario=scenario.name)
+    )
+
+
+def _average_over_runs(df: pd.DataFrame) -> pd.DataFrame:
+    index_cols = ["block_group", "calendar_year"]
+    return (
+        df.groupby(index_cols)["n_diagnosed"]
+        .mean()
+        .reset_index()
+        .assign(n_diagnosed=lambda df: df["n_diagnosed"].round().astype(int))
+        .groupby("block_group", as_index=False)
+        # Recalculate cumulative over averaged values
+        .apply(
+            lambda df: (
+                df.sort_values(by="calendar_year").assign(
+                    cume_n_diagnosed=lambda df: df["n_diagnosed"].cumsum()
+                )
+            )
+        )
     )
