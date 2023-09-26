@@ -27,26 +27,36 @@ class MapboxConfig:
 
 
 def plot_cume_diagnoses(
-    incidence_df: pd.DataFrame, block_group_gdf: gpd.GeoDataFrame, location_name: str
+    incidence_df: pd.DataFrame,
+    block_group_gdf: gpd.GeoDataFrame,
+    location_name: str,
+    center: None,
+    mapbox_config: MapboxConfig = MapboxConfig(),
 ) -> Figure:
     earliest_year = incidence_df["calendar_year"].min()
-    return px.choropleth(
+    fig = px.choropleth_mapbox(
         data_frame=incidence_df,
         geojson=block_group_gdf,
         featureidkey="properties.block_group",
         locations="block_group",
         color="cume_n_diagnosed",
         animation_frame="calendar_year",
-        fitbounds="geojson",
+        animation_group="block_group",
         range_color=_get_value_range(incidence_df, "cume_n_diagnosed"),
         width=700,
-        height=500,
+        height=700,
+        center=center,
+        zoom=5,
         labels={
             "cume_n_diagnosed": r"Cumulative<br>diagnoses",
             "calendar_year": "Year",
         },
         title=f"Diabetes diagnoses in {location_name} since {earliest_year}",
     )
+    fig.update_layout(
+        mapbox_style=mapbox_config.mapstyle, mapbox_accesstoken=mapbox_config.token
+    )
+    return fig
 
 
 def _get_value_range(df: pd.DataFrame, var_name: str) -> tuple[int, int]:
