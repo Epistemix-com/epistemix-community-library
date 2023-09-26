@@ -1,3 +1,7 @@
+startup {
+    open_csv(program_participation.csv, "agent_id", "sim_day", "insurance_status_id", "census_tract", "block_group")
+}
+
 variables {
     shared table prob_participate_by_insurance_status
     
@@ -32,6 +36,7 @@ condition CHECK_PARTICIPATION {
     
     state SetParticipation {
         if ((uniform(0, 1) < prob_participate_by_insurance_status[insurance_status_id]) & (current_state(HEALTH_STATUS) == HEALTH_STATUS.Overweight)) then {
+            print_csv(program_participation.csv, id, sim_day, insurance_status_id, Census_Tract, Block_Group)
             is_participating = 1
         }
         else {

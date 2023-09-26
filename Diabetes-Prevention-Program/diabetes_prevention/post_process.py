@@ -38,18 +38,18 @@ class VariableMeta(NamedTuple):
     filename: str
 
 
-def results_df(
+def get_results_df(
     job: FREDJob,
     variables: Iterable[VariableMeta],
     all_block_groups: pd.Series,
-    earliest_year: int,
+    year_range: tuple[int, int],
 ) -> pd.DataFrame:
     return (
         pd.concat(
             [
                 (
                     _summarize_observation_csv(r, v.filename)
-                    .pipe(_regularize_block_groups, all_block_groups)
+                    .pipe(_regularize_block_groups, all_block_groups, year_range)
                     .assign(variable=v.varname)
                     .assign(run_id=i)
                 )
@@ -57,7 +57,7 @@ def results_df(
                 for v in variables
             ]
         )
-        .assign(calendar_year=lambda df: df["sim_year"] + earliest_year)
+        .assign(calendar_year=lambda df: df["sim_year"] + year_range[0])
         .loc[:, ["run_id", "block_group", "calendar_year", "variable", "value"]]
         .reset_index(drop=True)
     )
@@ -98,16 +98,19 @@ def _summarize_observation_csv(run: FREDRun, csv_filename: str) -> pd.DataFrame:
     )
 
 
-def _regularize_block_groups(df: pd.DataFrame, all_block_groups: pd.Series):
+def _regularize_block_groups(
+    df: pd.DataFrame, all_block_groups: pd.Series, year_range: tuple[int, int]
+):
     """Complete diabetes incidence dataframe such that block groups
     for which no incidence was observed in the simulation have 0
     reported, rather than a missing row.
+
+    `year_range` is inclusive of both start and end year
     """
-    earliest_year = df["sim_year"].min()
-    latest_year = df["sim_year"].max()
+    sim_years = range(year_range[1] - year_range[0] + 1)
     return (
         pd.DataFrame.from_records(
-            product(all_block_groups, range(earliest_year, latest_year + 1)),
+            product(all_block_groups, sim_years),
             columns=["block_group", "sim_year"],
         )
         .merge(df, how="left", on=["block_group", "sim_year"])
@@ -121,7 +124,10 @@ class Scenario(NamedTuple):
 
 
 def generate_summary_results_file(
-    filename: Path, scenarios: Iterable[Scenario], state_fips: str
+    filename: Path,
+    scenarios: Iterable[Scenario],
+    state_fips: str,
+    year_range: tuple[int, int],
 ):
     """Generate final results output file for a given state.
 
@@ -130,18 +136,20 @@ def generate_summary_results_file(
     * cume_n_diagnosed
     """
     block_groups: pd.Series = get_state_block_groups_gdf(state_fips)["block_group"]
-    df = pd.concat([_get_scenario_data(s, block_groups) for s in scenarios])
+    df = pd.concat([_get_scenario_data(s, block_groups, year_range) for s in scenarios])
     df.to_csv(filename, index=False)
 
 
-def _get_scenario_data(scenario: Scenario, block_groups) -> FREDJob:
+def _get_scenario_data(
+    scenario: Scenario, block_groups: pd.Series, year_range: tuple[int, int]
+) -> FREDJob:
     job = FREDJob(job_key=scenario.job_key)
     variables = (
         VariableMeta("n_diagnosed", "diabetes_incidence.csv"),
         VariableMeta("n_participating", "program_participation.csv"),
     )
     return (
-        results_df(job, variables, block_groups, 2023)
+        get_results_df(job, variables, block_groups, year_range)
         .pipe(_average_over_runs)
         .assign(scenario=scenario.name)
     )
