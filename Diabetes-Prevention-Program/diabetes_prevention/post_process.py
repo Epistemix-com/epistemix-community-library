@@ -136,7 +136,26 @@ def generate_summary_results_file(
     * cume_n_diagnosed
     """
     block_groups: pd.Series = get_state_block_groups_gdf(state_fips)["block_group"]
-    df = pd.concat([_get_scenario_data(s, block_groups, year_range) for s in scenarios])
+    df = (
+        pd.concat([_get_scenario_data(s, block_groups, year_range) for s in scenarios])
+        .pipe(lambda df: df[df["variable"] == "n_diagnosed"])
+        .rename(
+            columns={
+                "value": "n_diagnosed",
+                "cume_value": "cume_n_diagnosed",
+            }
+        )
+        .loc[
+            :,
+            [
+                "block_group",
+                "calendar_year",
+                "scenario",
+                "n_diagnosed",
+                "cume_n_diagnosed",
+            ],
+        ]
+    )
     df.to_csv(filename, index=False)
 
 
@@ -144,10 +163,7 @@ def _get_scenario_data(
     scenario: Scenario, block_groups: pd.Series, year_range: tuple[int, int]
 ) -> FREDJob:
     job = FREDJob(job_key=scenario.job_key)
-    variables = (
-        VariableMeta("n_diagnosed", "diabetes_incidence.csv"),
-        VariableMeta("n_participating", "program_participation.csv"),
-    )
+    variables = (VariableMeta("n_diagnosed", "diabetes_incidence.csv"),)
     return (
         get_results_df(job, variables, block_groups, year_range)
         .pipe(_average_over_runs)
