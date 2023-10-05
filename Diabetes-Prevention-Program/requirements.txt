@@ -1,0 +1,2 @@
+seaborn==0.12.2
+epx-pop @ git+https://github.com/Epistemix-com/epx-pop@v0.2.0
