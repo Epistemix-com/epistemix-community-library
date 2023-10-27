@@ -6,7 +6,7 @@ folium
 jupyterlab
 # We have found that animations in the Quickstart Guide are incompatible
 # with later versions of plotly.
-plotly<=5.9.0
+plotly>=5.18.0
 # The notebooks in this repo depend on epxexec. This is assumed to be already
 # installed in the environment at runtime since we don't currently have a
 # robust way of installing it via pip.
