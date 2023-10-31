@@ -1,5 +1,5 @@
-comment doc {
-	A model of respiratory disease.
+comment {
+    A model of respiratory disease.
 }
 
 place Workplace {
@@ -11,7 +11,6 @@ place Household {
 }
 
 variables {
-    
     agent numeric income
     agent numeric race
     agent numeric my_exposure_location
@@ -20,7 +19,9 @@ variables {
 }
 
 startup {
-    open_csv(exposure_locs.csv, "id", "race", "age", "household_income", "today", "my_resp_exp_loc","my_exp_lat", "my_exp_lon","lat_house","long_house")
+    open_csv(exposure_locs.csv, "id", "race", "age", "household_income", \
+        "today", "my_resp_exp_loc", "my_exp_lat", "my_exp_lon", "lat_house", \
+        "long_house")
 }
 
 agent_startup {
@@ -38,203 +39,200 @@ condition RESP_DISEASE {
     
     state Import {
         print("Importing exposures!")
-        import_exposures(RESP_DISEASE,10)
+        import_exposures(RESP_DISEASE, 10)
         wait()
-        next()
+        default()
     }
     
     state GroupStart {
         wait(0)
-        next(Excluded)
+        default(Excluded)
     }
 
     state Susceptible {
         wait()
-        next()
+        default()
     }
 
     state Exposed {
         RESP_DISEASE.sus = 0
         set_state(RECORD_EXPOSURES,Exposed)
-        wait(24 * lognormal(1.9,1.23))
+        wait(24 * lognormal(1.9, 1.23))
         next(InfectiousAsymptomatic) with prob(0.33)
         default(InfectiousSymptomatic)
     }
 
     state InfectiousSymptomatic {
         RESP_DISEASE.trans = 1
-        wait(24 * lognormal(5.0,1.5))
-        next(Recovered)
+        wait(24 * lognormal(5.0, 1.5))
+        default(Recovered)
     }
 
     state InfectiousAsymptomatic {
         RESP_DISEASE.trans = 0.5
-        wait(24 * lognormal(5.0, 1.5) )
-        next(Recovered)
+        wait(24 * lognormal(5.0, 1.5))
+        default(Recovered)
     }
 
     state Recovered {
         RESP_DISEASE.trans = 0
         wait()
-        next()
+        default()
     }
-
 
 }
 
 condition RECORD_EXPOSURES {
 
-	comment doc {
-		a condition used to record disease exposure locations
+    comment {
+        a condition used to record disease exposure locations
 
-		Subjected
-		---------
-		agent : True
-		admin : False
-		meta : False
+        Subjected
+        ---------
+        agent : True
+        admin : False
+        meta : False
 
-		Parameters
-		----------
-		record_infections : global
-			flag indicating if infections should be recorded in a `infections.csv`
+        Parameters
+        ----------
+        record_infections : global
+            flag indicating if infections should be recorded in a
+            `infections.csv`
 
-		record_hospitalizations : global
-			flag indicating if hospitalizations should be recorded in `hospitalizations.csv`
+        record_hospitalizations : global
+            flag indicating if hospitalizations should be recorded in
+            `hospitalizations.csv`
 
-		record_deaths : global
-			flag indicating if deaths should be recorded in `deaths.csv`
+        record_deaths : global
+            flag indicating if deaths should be recorded in `deaths.csv`
 
-		record_recoveries : global
-			flag indicating if recoveries should be recorded in `recoveries.csv`
+        record_recoveries : global
+            flag indicating if recoveries should be recorded in `recoveries.csv`
 
-		record_immune : global
-			flag indicating if immune agents should be recorded in `immune.csv`
+        record_immune : global
+            flag indicating if immune agents should be recorded in `immune.csv`
 
-		Variables
-		---------
+        Variables
+        ---------
 
-		my_exposure_location : personal
-			spid of exposure location
+        my_exposure_location : personal
+            spid of exposure location
 
-		my_exposure_latitude : personal
-			lattitude of exposure location
+        my_exposure_latitude : personal
+            latitude of exposure location
 
-		my_exposure_longitude : personal
-			longitude of exposure location
+        my_exposure_longitude : personal
+            longitude of exposure location
 
 
-		Notes
-		-----
-		The type of output produced from this model element is specified by 
-		"turning on" the flags listed in the "Parameters" section above.
-	}
+        Notes
+        -----
+        The type of output produced from this model element is specified by
+        "turning on" the flags listed in the "Parameters" section above.
+    }
 
-	output = 1
-	start_state = Start
+    output = 1
+    start_state = Start
 
-	state Start {
-		wait(0)
-		default(Wait)
-	}
+    state Start {
+        wait(0)
+        default(Wait)
+    }
 
-	state Wait {
-		wait()
-		default()
-	}
+    state Wait {
+        wait()
+        default()
+    }
 
-	state Exposed {
-		wait(0)
+    state Exposed {
+        wait(0)
 
-		# exposed by the meta agent
-		if (was_exposed_externally(RESP_DISEASE))     then next(External)
+        # exposed by the meta agent
+        if (was_exposed_externally(RESP_DISEASE))       then next(External)
 
-		# exposed at a default place type
-		if (was_exposed_in(RESP_DISEASE, Household))    then next(Household)
-		if (was_exposed_in(RESP_DISEASE, Block_Group))  then next(Block_Group)
-		if (was_exposed_in(RESP_DISEASE, Census_Tract)) then next(Census_Tract)
-		if (was_exposed_in(RESP_DISEASE, County))       then next(County)
-		if (was_exposed_in(RESP_DISEASE, School))       then next(School)
-		if (was_exposed_in(RESP_DISEASE, Workplace))    then next(Workplace)
+        # exposed at a default place type
+        if (was_exposed_in(RESP_DISEASE, Household))    then next(Household)
+        if (was_exposed_in(RESP_DISEASE, Block_Group))  then next(Block_Group)
+        if (was_exposed_in(RESP_DISEASE, Census_Tract)) then next(Census_Tract)
+        if (was_exposed_in(RESP_DISEASE, County))       then next(County)
+        if (was_exposed_in(RESP_DISEASE, School))       then next(School)
+        if (was_exposed_in(RESP_DISEASE, Workplace))    then next(Workplace)
 
-		# exposed at an unknown place type
-		default(Other)
-	}
+        # exposed at an unknown place type
+        default(Other)
+    }
 
-	state External {
-		my_exposure_location = -1
-		my_exposure_latitude = latitude(Self)
-		my_exposure_longitude = longitude(Self)
-		wait(0)
-		next(Record)
-	}
+    state External {
+        my_exposure_location = -1
+        my_exposure_latitude = latitude(Self)
+        my_exposure_longitude = longitude(Self)
+        wait(0)
+        default(Record)
+    }
 
-	state Other {
-		my_exposure_location = 0
-		my_exposure_latitude = latitude(Self)
-		my_exposure_longitude = longitude(Self)
-		wait(0)
-		next(Record)
-	}
+    state Other {
+        my_exposure_location = 0
+        my_exposure_latitude = latitude(Self)
+        my_exposure_longitude = longitude(Self)
+        wait(0)
+        default(Record)
+    }
 
-	state Household {
-		#my_exposure_location = Household
+    state Household {
         my_exposure_location = 1
-		my_exposure_latitude = latitude(Household)
-		my_exposure_longitude = longitude(Household)
-		wait(0)
-		next(Record)
-	}
+        my_exposure_latitude = latitude(Household)
+        my_exposure_longitude = longitude(Household)
+        wait(0)
+        default(Record)
+    }
 
-	state Block_Group {
-		#my_exposure_location = Block_Group
+    state Block_Group {
         my_exposure_location = 2
-		my_exposure_latitude = latitude(Self)
-		my_exposure_longitude = longitude(Self)
-		wait(0)
-		next(Record)
-	}
+        my_exposure_latitude = latitude(Self)
+        my_exposure_longitude = longitude(Self)
+        wait(0)
+        default(Record)
+    }
 
-	state Census_Tract {
-		#my_exposure_location = Census_Tract
+    state Census_Tract {
         my_exposure_location = 3
-		my_exposure_latitude = latitude(Self)
-		my_exposure_longitude = longitude(Self)
-		wait(0)
-		next(Record)
-	}
+        my_exposure_latitude = latitude(Self)
+        my_exposure_longitude = longitude(Self)
+        wait(0)
+        default(Record)
+    }
 
-	state County {
-		#my_exposure_location = County
+    state County {
         my_exposure_location = 4
-		my_exposure_latitude = latitude(Self)
-		my_exposure_longitude = longitude(Self)
-		wait(0)
-		next(Record)
-	}
+        my_exposure_latitude = latitude(Self)
+        my_exposure_longitude = longitude(Self)
+        wait(0)
+        default(Record)
+    }
 
-	state School {
-		#my_exposure_location = School
+    state School {
         my_exposure_location = 5
-		my_exposure_latitude = latitude(School)
-		my_exposure_longitude = longitude(School)
-		wait(0)
-		next(Record)
-	}
+        my_exposure_latitude = latitude(School)
+        my_exposure_longitude = longitude(School)
+        wait(0)
+        default(Record)
+    }
 
-	state Workplace {
-		#my_exposure_location = Workplace
+    state Workplace {
         my_exposure_location = 6
-		my_exposure_latitude = latitude(Workplace)
-		my_exposure_longitude = longitude(Workplace)
-		wait(0)
-		next(Record)
-	}
+        my_exposure_latitude = latitude(Workplace)
+        my_exposure_longitude = longitude(Workplace)
+        wait(0)
+        default(Record)
+    }
     
     state Record {
-        if (is_member(Household)) then print_csv(exposure_locs.csv, id, race, age, income, today, my_exposure_location, my_exposure_latitude, my_exposure_longitude,latitude(Household),longitude(Household))
+        if (is_member(Household)) then print_csv( \
+            exposure_locs.csv, id, race, age, income, today, \
+            my_exposure_location, my_exposure_latitude, my_exposure_longitude, \
+            latitude(Household), longitude(Household) \
+        )
         wait(0)
         default(Excluded)
     }
 }
-
-

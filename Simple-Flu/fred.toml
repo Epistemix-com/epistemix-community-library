@@ -12,7 +12,7 @@ fred_versions = [
   ">=8.4",
   "<9"
 ]
-banner = "./images/yellow_epistemix.png"
+banner = "./images/exposure_locations.png"
 
 [run_options]
 src_dir = "source"
