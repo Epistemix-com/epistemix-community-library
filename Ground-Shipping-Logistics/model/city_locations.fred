@@ -1,60 +1,59 @@
 comment {
-	A model for generating a city network.
+    A model for generating a city network.
 
-	Authors
-	-------
-	Erin Zwick : erin.zwick@epistemix.com
-	Andrew Lane : andrew.lane@epistemix.com
+    Authors
+    -------
+    Erin Zwick : erin.zwick@epistemix.com
+    Andrew Lane : andrew.lane@epistemix.com
 }
 
 variables {
-	# network variables
-	shared list_table adjacency_matrix
-	shared list_table distance_matrix
-	adjacency_matrix.output = 1
-	distance_matrix.output = 1
+    # network variables
+    shared list_table adjacency_matrix
+    shared list_table distance_matrix
+    adjacency_matrix.output = 1
+    distance_matrix.output = 1
 }
 
 place City {
-	has_group_agent = 1
+    has_group_agent = 1
 }
 
 condition GENERATE_LOCATIONS {
-	comment doc {
-		A condition that reads in data and generates truck agents.
+    comment {
+        A condition that reads in data and generates truck agents.
 
-		Subjected
-		--------
-		agent : False
-		admin : False
-		meta : True
+        Subjected
+        --------
+        agent : False
+        admin : False
+        meta : True
 
-		Variables
-		---------
-		adjacency_matrix : shared list_table
-			keys are city IDs and values are lists of adjacent cities
-		distance_matrix : shared list_table
-			keys are city IDs and values are lists of distances to
-			adjacent cities
+        Variables
+        ---------
+        adjacency_matrix : shared list_table
+            keys are city IDs and values are lists of adjacent cities
+        distance_matrix : shared list_table
+            keys are city IDs and values are lists of distances to
+            adjacent cities
 
-		Dependencies
-		------------
-		None
-	}
+        Dependencies
+        ------------
+        None
+    }
 
-	meta_start_state = MetaStart
+    meta_start_state = MetaStart
 
-	state MetaStart {
-		wait(0)
-		next(InitLocations)
-	}
+    state MetaStart {
+        wait(0)
+        default(InitLocations)
+    }
 
-	state InitLocations {
-		read_place_file($FRED_PROJECT/data/city_locations.txt,City)
-		read_list_table(adjacency_matrix,$FRED_PROJECT/data/routes.csv,0,1)
-		read_list_table(distance_matrix,$FRED_PROJECT/data/routes.csv,0,2)
-		wait()
-		next()
-	}
+    state InitLocations {
+        read_place_file(data/city_locations.txt,City)
+        read_list_table(adjacency_matrix, data/routes.csv,0,1)
+        read_list_table(distance_matrix, data/routes.csv,0,2)
+        wait()
+        default()
+    }
 }
-
