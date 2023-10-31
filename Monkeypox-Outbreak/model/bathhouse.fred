@@ -54,7 +54,7 @@ variables {
 }
 
 startup {
-	read_place_file($FRED_PROJECT/data/bathhouse_transmission_MPOX_OUTBREAK.txt, BathHouse)
+	read_place_file(data/bathhouse_transmission_MPOX_OUTBREAK.txt, BathHouse)
 }
 
 condition BATHHOUSE {
@@ -93,7 +93,7 @@ condition BATHHOUSE {
 			candidate = candidates[position]
 
 			# make sure candidate is distinct from self
-			while (id == candidate) do {
+			while (id() == candidate) do {
 				position = int(uniform(0, length(candidates)))
 				candidate = candidates[position]
 			}
@@ -101,7 +101,7 @@ condition BATHHOUSE {
 			# record the encounter at the bathhouse
 			tell(BathHouse, encounters, ask(BathHouse, encounters) + 1)
             # calculate the probability that the encounter leads to transmission
-            print_event_file(encounters.txt, "Encounter between ", id, " and ", candidate)
+            print_event_file(encounters.txt, "Encounter between ", id(), " and ", candidate)
 			
 		}
         other_agent_sus = ask(candidate,mpxsus)
@@ -127,7 +127,7 @@ condition BATHHOUSE {
 	}
 
 	state Report {
-		print_event_file(report.txt,"BathHouse ", id, " had ", attendees, " attendees and ", encounters, " encounters in the last week")
+		print_event_file(report.txt,"BathHouse ", id(), " had ", attendees, " attendees and ", encounters, " encounters in the last week")
 		attendees = 0
 		encounters = 0
 		wait(24*7)
@@ -135,4 +135,3 @@ condition BATHHOUSE {
 	}
 
 }
-

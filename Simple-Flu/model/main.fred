@@ -13,5 +13,4 @@ simulation {
     end_date = 2022-Jul-01
 }
 
-include model/simpleflu.fred
-
+include simpleflu.fred
