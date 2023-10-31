@@ -10,23 +10,21 @@ comment {
 
 
 startup {
-
-   open_csv(agent_at_ED.csv, "AGENT_ID", "DATE", "HEALTH", "IMPATIENCE", "BOOKING_ATTEMPTS")
-   open_csv(agent_health_tracks.csv, "AGENT_ID", "DATE", "HEALTH", "SICK")
+    open_csv(agent_at_ED.csv, "AGENT_ID", "DATE", "HEALTH", "IMPATIENCE", "BOOKING_ATTEMPTS")
+    open_csv(agent_health_tracks.csv, "AGENT_ID", "DATE", "HEALTH", "SICK")
 }
 
-variables{
-   agent numeric accessed_healthcare
+variables {
+    agent numeric accessed_healthcare
 }
-
 
 condition HEALTH_UPDATE {
 
-   start_state = UpdateHealth
-   group_start_state = Excluded
-   meta_start_state = Excluded
+    start_state = UpdateHealth
+    group_start_state = Excluded
+    meta_start_state = Excluded
 
-   comment doc {
+   comment {
 
       A condition that updates an agents health. In response, agents choose whether or not to access different 
       healthcare options depending on the availability of appointments, their health status and their impatience.
@@ -80,185 +78,166 @@ condition HEALTH_UPDATE {
 
    }
 
+    variables {
+        agent numeric sick
+        agent numeric got_better
+        agent numeric magic_recovery_probability
+        agent numeric my_magic_recovery
+        agent list all_available_suitable_appointments
+        agent numeric time_getting_better 
+        agent numeric my_choice_visitED
+        agent list my_dr_office_available_appointments
+        agent numeric selected_appointment
+        agent numeric fred_bug_selected_appointment
 
-   variables {
+        agent numeric updated_dr_office_available_inperson_appointments
+        agent numeric updated_dr_office_available_phone_appointments
+        agent numeric updated_dr_office_available_online_appointments
 
-      agent numeric sick
-      agent numeric got_better
-      agent numeric magic_recovery_probability
-      agent numeric my_magic_recovery
-      agent list all_available_suitable_appointments
-      agent numeric time_getting_better 
-      agent numeric my_choice_visitED
-      agent list my_dr_office_available_appointments
-      agent numeric selected_appointment
-      agent numeric fred_bug_selected_appointment
+        agent numeric my_dr_office_available_inperson_appointments
+        agent numeric my_dr_office_available_phone_appointments
+        agent numeric my_dr_office_available_online_appointments
 
-      agent numeric updated_dr_office_available_inperson_appointments
-      agent numeric updated_dr_office_available_phone_appointments
-      agent numeric updated_dr_office_available_online_appointments
+        agent numeric my_booked_appointment_inperson_update
+        agent numeric my_booked_appointment_phone_update
+        agent numeric my_booked_appointment_online_update
+    }
 
-      agent numeric my_dr_office_available_inperson_appointments
-      agent numeric my_dr_office_available_phone_appointments
-      agent numeric my_dr_office_available_online_appointments
+    state UpdateHealth {
 
-      agent numeric my_booked_appointment_inperson_update
-      agent numeric my_booked_appointment_phone_update
-      agent numeric my_booked_appointment_online_update
+        health = round(health + 0.5*last(sample_with_replacement(list(-1,0,1), 1))*last(sample_with_replacement(range_list(health+1), 1)))
+        if (bernoulli(0.05)==1) then health = health + 3
 
-   } 
+        if (health > 4) then health = 4
+        if (accessed_healthcare == 1) then health=0
 
+        print_csv(agent_health_tracks.csv, id(), date(), health, sick)
+        accessed_healthcare = 0
 
-   state UpdateHealth {
+        wait(24)
+        if (health == 4) then next(AtED)
+        default(MagicRecovery)
 
-		health = round(health + 0.5*last(sample_with_replacement(list(-1,0,1), 1))*last(sample_with_replacement(range_list(health+1), 1)))
-      if (bernoulli(0.05)==1) then health = health + 3
-      
-      if(health > 4) then health = 4
-      if(accessed_healthcare == 1) then health=0
+    }
 
+    state MagicRecovery {
 
-      print_csv(agent_health_tracks.csv, id, today, health, sick)
-      accessed_healthcare = 0
+        magic_recovery_probability = 1/(health + 1)
+        my_magic_recovery = bernoulli(magic_recovery_probability)
 
-      wait(24)
-      if(health == 4) then next(AtED)
-      default(MagicRecovery)
-      
-   }
+        wait(0)
+        if (eq(my_magic_recovery,1)) then next(GetBetter)
+        default(GetSick)
 
+    }    
 
-   state MagicRecovery{
+    state GetBetter {
 
-      magic_recovery_probability = 1/(health + 1)
-      my_magic_recovery = bernoulli(magic_recovery_probability)
+        health = 0
+        current_attempts_at_booking = 0
+        impatience = 0
+        sick = 0
 
-      wait(0)
-      if (eq(my_magic_recovery,1)) then next(GetBetter)
-      default(GetSick)
+        wait(0)
+        default(UpdateHealth)
 
-   }    
+    }
 
+    state GetSick{
 
-   state GetBetter {
+        if(eq(health, 1)) then sick = bernoulli(0.25)
+        if(eq(health, 2)) then sick = bernoulli(0.75)
+        if(eq(health, 3)) then sick = bernoulli(0.95)
+        if (health == 4) then next(AtED)
 
-      health = 0
-      current_attempts_at_booking = 0
-      impatience = 0
-      sick = 0
+        wait(0)
+        default(CheckImpatience)
 
-      wait(0)
-      default(UpdateHealth)
+    }
 
-   }
+    state CheckImpatience{
 
+        impatience = 0
+        if(eq(health, 1) & current_attempts_at_booking > 8) then impatience = 1
+        if(eq(health, 2) & current_attempts_at_booking > 4) then impatience = 1
+        if(eq(health, 3) & current_attempts_at_booking > 2) then impatience = 1 
 
-   state GetSick{
+        wait(0)
+        default(CheckAvailableAppointment)
 
-      if(eq(health, 1)) then sick = bernoulli(0.25)
-      if(eq(health, 2)) then sick = bernoulli(0.75)
-      if(eq(health, 3)) then sick = bernoulli(0.95)
-      if (health == 4) then next(AtED)
+    }
 
-      wait(0)
-      default(CheckImpatience)
+    state CheckAvailableAppointment {
 
-   }
+        current_attempts_at_booking = current_attempts_at_booking + 1
 
+        my_dr_office_available_appointments = list()
 
-   state CheckImpatience{
+        my_dr_office_available_inperson_appointments = ask(my_dr_office, my_available_inperson_appointments)
+        my_dr_office_available_phone_appointments = ask(my_dr_office, my_available_phone_appointments)
+        my_dr_office_available_online_appointments = ask(my_dr_office, my_available_online_appointments)
 
-      impatience = 0
-      if(eq(health, 1) & current_attempts_at_booking > 8) then impatience = 1
-      if(eq(health, 2) & current_attempts_at_booking > 4) then impatience = 1
-      if(eq(health, 3) & current_attempts_at_booking > 2) then impatience = 1 
-      
-      wait(0)
-      default(CheckAvailableAppointment)
+        my_dr_office_available_appointments[0] = my_dr_office_available_inperson_appointments
+        my_dr_office_available_appointments[1] = my_dr_office_available_phone_appointments
+        my_dr_office_available_appointments[2] = my_dr_office_available_online_appointments
 
-   }
-  
+        all_available_suitable_appointments = select(my_dr_office_available_appointments, appointment_preference)
+        selected_appointment = last(sample_without_replacement(appointment_preference, 1))
 
-   state CheckAvailableAppointment {
+        wait(0)
+        if (all_available_suitable_appointments[selected_appointment] > 0) then next(BookAvailableAppointment)
+        default(DecideVisitED)
 
-      current_attempts_at_booking = current_attempts_at_booking + 1
+    }
 
-      my_dr_office_available_appointments = list()
-      
-      my_dr_office_available_inperson_appointments = ask(my_dr_office, my_available_inperson_appointments)
-      my_dr_office_available_phone_appointments = ask(my_dr_office, my_available_phone_appointments)
-      my_dr_office_available_online_appointments = ask(my_dr_office, my_available_online_appointments)
+    state BookAvailableAppointment {
 
-      my_dr_office_available_appointments[0] = my_dr_office_available_inperson_appointments
-      my_dr_office_available_appointments[1] = my_dr_office_available_phone_appointments
-      my_dr_office_available_appointments[2] = my_dr_office_available_online_appointments
+        if (selected_appointment == 0) then my_booked_appointment_inperson_update = my_dr_office_available_inperson_appointments - 1 
+        if (selected_appointment == 1) then my_booked_appointment_phone_update = my_dr_office_available_phone_appointments - 1 
+        if (selected_appointment == 2) then my_booked_appointment_online_update = my_dr_office_available_online_appointments - 1 
 
-      all_available_suitable_appointments = select(my_dr_office_available_appointments, appointment_preference)
-      selected_appointment = last(sample_without_replacement(appointment_preference, 1))
+        tell(my_dr_office, my_available_inperson_appointments, my_booked_appointment_inperson_update)
+        tell(my_dr_office, my_available_phone_appointments, my_booked_appointment_phone_update)
+        tell(my_dr_office, my_available_online_appointments, my_booked_appointment_online_update)
 
-      wait(0)
-      if (all_available_suitable_appointments[selected_appointment] > 0) then next(BookAvailableAppointment)
-      default(DecideVisitED)
+        push(historic_attempts_at_booking, current_attempts_at_booking)
 
-   }
+        time_getting_better = health*24*normal(7,1)
 
+        wait(time_getting_better)
+        default(AccessedHealthcare)
 
-   state BookAvailableAppointment {
+    }
 
-      if(selected_appointment == 0) then my_booked_appointment_inperson_update = my_dr_office_available_inperson_appointments - 1 
-      if(selected_appointment == 1) then my_booked_appointment_phone_update = my_dr_office_available_phone_appointments - 1 
-      if(selected_appointment == 2) then my_booked_appointment_online_update = my_dr_office_available_online_appointments - 1 
+    state DecideVisitED {
 
-      tell(my_dr_office, my_available_inperson_appointments, my_booked_appointment_inperson_update)
-      tell(my_dr_office, my_available_phone_appointments, my_booked_appointment_phone_update)
-      tell(my_dr_office, my_available_online_appointments, my_booked_appointment_online_update)
-      
-      push(historic_attempts_at_booking, current_attempts_at_booking)
- 
-      time_getting_better = health*24*normal(7,1)
+        my_choice_visitED = bernoulli(0.5+health*0.09) # 0.1 would make it certain for a severe case to go
 
-      wait(time_getting_better)
-      default(AccessedHealthcare)
+        wait(0)
+        if (impatience == 1) then next(AtED)
+        default(UpdateHealth)
 
-   }
+    }
 
+    state AtED {
 
-   state DecideVisitED{
+        print_csv(agent_at_ED.csv, id(), date(), health, impatience, current_attempts_at_booking)
+        time_getting_better = health*24*normal(2,1)
 
-      my_choice_visitED = bernoulli(0.5+ health*0.09) # 0.1 would make it certain for a severe case to go
+        wait(time_getting_better)
+        default(AccessedHealthcare)
 
-      wait(0)
-      if(impatience == 1) then next(AtED)
-      default(UpdateHealth)
+    }
 
-   }
+    state AccessedHealthcare {
 
+        impatience = 0
+        current_attempts_at_booking = 0
+        accessed_healthcare = 1
 
-   state AtED {
+        wait(0)
+        default(UpdateHealth)
 
-      print_csv(agent_at_ED.csv, id, date, health, impatience, current_attempts_at_booking)
-      time_getting_better = health*24*normal(2,1)
-
-      wait(time_getting_better)
-      default(AccessedHealthcare)
-
-   }
-
-   state AccessedHealthcare{
-
-      impatience = 0
-      current_attempts_at_booking = 0
-      accessed_healthcare = 1
-
-      wait(0)
-      default(UpdateHealth)
-
-   }
+    }
 
 }
-
-
-
-
-
-    
