@@ -10,12 +10,9 @@ comment {
 }
 
 variables {
-    
     agent numeric num_kids 
     agent numeric num_adults
-
 }
-
 
 condition WATER_ACTIVITY {
     
@@ -42,11 +39,9 @@ condition WATER_ACTIVITY {
                 - Shower_constant
                 - Eating_constant 
                 - Cleaning_constant
-        
     }
     
     variables {
-
         agent numeric Lawn_constant
         agent numeric Laundry_constant
         agent numeric Toilet_constant
@@ -68,21 +63,19 @@ condition WATER_ACTIVITY {
     meta_start_state = Excluded
     
     state Start {
-
         wait(until(8pm))
         if (is_group_agent(Household)) then next(HouseSize)
         default(Excluded)
     }
     
     state HouseSize {
-        num_kids=length(select(members(Household), ask(_, age) < 16))
-        num_adults=length(select(members(Household), ask(_, age) >= 16))
+        num_kids=length(select(members(Household), ask(_, age()) < 16))
+        num_adults=length(select(members(Household), ask(_, age()) >= 16))
         wait(0)
         default(CheckHousehold)
     }
     
     state CheckHousehold {
-        
         wait(0)
         if (num_kids + num_adults > 0) then next(ComputeDailyTotal)
         default(Start)
@@ -91,17 +84,16 @@ condition WATER_ACTIVITY {
     
     state ComputeDailyTotal {
         household_usage = household_usage + \
-                        sum(list( \
-                            Toilet_constant * poisson(6.5 * (num_kids+num_adults)),  \  
-                            Shower_constant * poisson(1.0 * num_adults), \  
-                            Eating_constant * poisson(5.0 * (num_kids+num_adults)), \  
-                            Cleaning_constant * poisson(1.5 * num_adults), \  
-                            Laundry_constant * poisson(0.33 * (num_kids+num_adults)), \  
-                            Lawn_constant * bernoulli(1/7)  \  
+                        sum(list(                                                      \
+                            Toilet_constant   * poisson(6.5 * (num_kids+num_adults)),  \
+                            Shower_constant   * poisson(1.0 * num_adults),             \
+                            Eating_constant   * poisson(5.0 * (num_kids+num_adults)),  \
+                            Cleaning_constant * poisson(1.5 * num_adults),             \
+                            Laundry_constant  * poisson(0.33 * (num_kids+num_adults)), \
+                            Lawn_constant     * bernoulli(1/7)                         \
                         ))
 
         wait(1)
-        next(Start)
+        default(Start)
     }
-
 }
