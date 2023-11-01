@@ -13,7 +13,6 @@ simulation {
     locations = Loving_County_TX
     start_date = 2022-May-10
     end_date = 2022-May-11
-
 }
 
 variables {
@@ -30,15 +29,15 @@ variables {
 
 startup {
     # code 999 means item is not available at that store
-    open_csv(transactions.csv, "id", "age", "race", "today", "store","num_items","total_spent")
-    read_list_table(store_inventories, $FRED_PROJECT/data/item_inventory.csv,1,0)
-    read_list_table(item_prices, $FRED_PROJECT/data/item_inventory.csv,0,2)
-    stores = read($FRED_PROJECT/data/item_inventory.csv,1)
+    open_csv(transactions.csv, "id", "age", "race", "today", "store", "num_items", "total_spent")
+    read_list_table(store_inventories, data/item_inventory.csv, 1, 0)
+    read_list_table(item_prices, data/item_inventory.csv, 0, 2)
+    stores = read(data/item_inventory.csv, 1)
 }
 
 condition SHOPPING {
 
-    comment doc {
+    comment {
         This condition has agents pick a store to shop at, then sends them
         shopping.
 
@@ -85,28 +84,28 @@ condition SHOPPING {
     
     state Start {
         wait(0)
-        if (age >= 18) then next(ChooseStore)
+        if (age() >= 18) then next(ChooseStore)
         default(Excluded)
     }
     
     state ChooseStore {
         wait(0)
-        my_store = last(sample_with_replacement(stores,1))
-        next(GoShopping)
+        my_store = last(sample_with_replacement(stores, 1))
+        default(GoShopping)
     }
     
     state GoShopping {
-        number_of_items = uniform(1,length(store_inventories[my_store]))
+        number_of_items = uniform(1, length(store_inventories[my_store]))
         
         my_items = sample_without_replacement(store_inventories[my_store], number_of_items)
         
-        print("ID     ", id)
+        print("ID     ", id())
         print("----------------")
         print("Store  ", my_store)
         print("Item No. ", "  Price")
         
         for (x, my_items) do {
-            if(item_prices[x][my_store-1] != 999) then {
+            if (item_prices[x][my_store-1] != 999) then {
                 print("   ",x,"         $",item_prices[x][my_store-1])
                 my_total_spent = my_total_spent + item_prices[x][my_store-1]
             }
@@ -118,11 +117,9 @@ condition SHOPPING {
         print("Total:       $", my_total_spent)
         print("----------------")
         
-        print_csv(transactions.csv, id, age, race, today, my_store, length(my_items), my_total_spent)
+        print_csv(transactions.csv, id(), age(), race, today(), my_store, length(my_items), my_total_spent)
         
         wait(0)
-        next(Excluded)
+        default(Excluded)
     }
-
-
 }

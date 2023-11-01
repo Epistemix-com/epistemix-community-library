@@ -9,14 +9,13 @@ comment {
 }
 
 startup {
-    open_csv(monthly_household_data.csv, "Date", "HH_ID", "Num_Kids", "Num_Adults", "Household_Usage")
+    open_csv(monthly_household_data.csv, "Date", "HH_ID", "BG_ID", "Num_Kids", "Num_Adults", "Household_Usage")
     open_csv(monthly_county_data.csv, "Date", "County", "County_Usage", \
             "Water_availability", "Overage_month", "Num_households")
-
 }
 
 group_startup {
-    if (is_group_agent(Household)) then push(all_household_ids, id)
+    if (is_group_agent(Household)) then push(all_household_ids, id())
 }
 
 variables {
@@ -31,14 +30,16 @@ variables {
     agent list my_members
     agent list my_id_list
     agent list moved_households
+    agent numeric my_block_group
     agent numeric my_county
     agent numeric total_usage
+    
+    agent numeric household_relationship
 
     left_household_ids = list()
     prob_moving = 0.05
     restriction_threshold = 21000 * 39
 }
-
 
 condition REPORT_MONTHLY_USAGE {
     
@@ -55,10 +56,15 @@ condition REPORT_MONTHLY_USAGE {
     
     }
         
-    start_state = Excluded
+    start_state = ReportBlockGroup
     group_start_state = GroupStart
     meta_start_state = Excluded
     
+    state ReportBlockGroup {
+        if (household_relationship == householder) then tell(Household, my_block_group, Block_Group)
+        wait(0)
+        default(Excluded)
+    }
     
     state GroupStart {
         if (is_group_agent(Household)) then next(HouseholdStandby)
@@ -66,22 +72,20 @@ condition REPORT_MONTHLY_USAGE {
         wait(0)
         default(Excluded)
     }
-    
 
     state HouseholdStandby {
-        if (month == Jan) then wait(until(Feb, 1, 10pm))
-        if (month == Feb) then wait(until(Mar, 1, 10pm))
-        if (month == Mar) then wait(until(Apr, 1, 10pm))
-        if (month == Apr) then wait(until(May, 1, 10pm))
-        if (month == May) then wait(until(Jun, 1, 10pm))
-        if (month == Jun) then wait(until(Jul, 1, 10pm))
-        if (month == Jul) then wait(until(Aug, 1, 10pm))
-        if (month == Aug) then wait(until(Sep, 1, 10pm))
-        if (month == Sep) then wait(until(Oct, 1, 10pm))
-        if (month == Oct) then wait(until(Nov, 1, 10pm))
-        if (month == Nov) then wait(until(Dec, 1, 10pm))
-        if (month == Dec) then wait(until(Jan, 1, 10pm))
-        wait()
+        if (month() == Jan) then wait(until(Feb, 1, 10pm))
+        if (month() == Feb) then wait(until(Mar, 1, 10pm))
+        if (month() == Mar) then wait(until(Apr, 1, 10pm))
+        if (month() == Apr) then wait(until(May, 1, 10pm))
+        if (month() == May) then wait(until(Jun, 1, 10pm))
+        if (month() == Jun) then wait(until(Jul, 1, 10pm))
+        if (month() == Jul) then wait(until(Aug, 1, 10pm))
+        if (month() == Aug) then wait(until(Sep, 1, 10pm))
+        if (month() == Sep) then wait(until(Oct, 1, 10pm))
+        if (month() == Oct) then wait(until(Nov, 1, 10pm))
+        if (month() == Nov) then wait(until(Dec, 1, 10pm))
+        wait(until(Jan, 1, 10pm)) # if (month() == Dec)
         default(CountHouseholds)
     }
     
@@ -92,48 +96,41 @@ condition REPORT_MONTHLY_USAGE {
         default(PrintHouseholdData)
     }
 
-    
     state PrintHouseholdData {
         county_monthly_usage = county_monthly_usage + household_usage
-        print_csv(monthly_household_data.csv, date, id, num_kids, num_adults, household_usage)
+        print_csv(monthly_household_data.csv, date(), id(), my_block_group, num_kids, num_adults, household_usage)
 
         wait(0)
         default(CheckRestrictions)
     }
     
     state CheckRestrictions {
-        
         wait(0)
         if (restriction_month > 5) then next(ConsiderLeave)
         default(ResetHouseholdVariables)
-    
     }
     
     state ConsiderLeave {
-        
-      wait(0)
-      next(LeaveReset) with prob(prob_moving)
-      default(ResetHouseholdVariables)  
+        wait(0)
+        next(LeaveReset) with prob(prob_moving)
+        default(ResetHouseholdVariables)  
     }
     
     state LeaveReset {
-        
-        my_id_list = list(id)
+        my_id_list = list(id())
         all_household_ids = set_difference(all_household_ids, my_id_list)
-        
+
         num_kids = 0
         num_adults = 0               
         household_usage = 0
         wait(0)
-        default(MovedAway) 
-    
+        default(MovedAway)
     }
     
     state MovedAway {
-        push(left_household_ids, id)
+        push(left_household_ids, id())
         wait()
         default()
-    
     }
     
     state ResetHouseholdVariables {
@@ -143,54 +140,48 @@ condition REPORT_MONTHLY_USAGE {
     }
     
     state CountyStandby {
-        if (month == Jan) then wait(until(Feb, 1, 11pm))
-        if (month == Feb) then wait(until(Mar, 1, 11pm))
-        if (month == Mar) then wait(until(Apr, 1, 11pm))
-        if (month == Apr) then wait(until(May, 1, 11pm))
-        if (month == May) then wait(until(Jun, 1, 11pm))
-        if (month == Jun) then wait(until(Jul, 1, 11pm))
-        if (month == Jul) then wait(until(Aug, 1, 11pm))
-        if (month == Aug) then wait(until(Sep, 1, 11pm))
-        if (month == Sep) then wait(until(Oct, 1, 11pm))
-        if (month == Oct) then wait(until(Nov, 1, 11pm))
-        if (month == Nov) then wait(until(Dec, 1, 11pm))
-        if (month == Dec) then wait(until(Jan, 1, 11pm))
-        wait()
-        
+        if (month() == Jan) then wait(until(Feb, 1, 11pm))
+        if (month() == Feb) then wait(until(Mar, 1, 11pm))
+        if (month() == Mar) then wait(until(Apr, 1, 11pm))
+        if (month() == Apr) then wait(until(May, 1, 11pm))
+        if (month() == May) then wait(until(Jun, 1, 11pm))
+        if (month() == Jun) then wait(until(Jul, 1, 11pm))
+        if (month() == Jul) then wait(until(Aug, 1, 11pm))
+        if (month() == Aug) then wait(until(Sep, 1, 11pm))
+        if (month() == Sep) then wait(until(Oct, 1, 11pm))
+        if (month() == Oct) then wait(until(Nov, 1, 11pm))
+        if (month() == Nov) then wait(until(Dec, 1, 11pm))
+        wait(until(Jan, 1, 11pm)) # if (month() == Dec)
         default(CheckCountyUsage)
     }
     
     state CheckCountyUsage {
-       
         wait(0)
         if (county_monthly_usage > restriction_threshold) then next(Restricted)  
         default(UnderThreshold)
     }
     
     state Restricted {
-        
         restriction_month = restriction_month + 1     
         wait(0)
-        default(determineThreshold)
+        default(DetermineThreshold)
     }
     
     state UnderThreshold {
         restriction_month = restriction_month - 1   
         restriction_month = max(restriction_month, 0)
         wait(0)
-        default(determineThreshold)
+        default(DetermineThreshold)
     }
     
-    state determineThreshold {
+    state DetermineThreshold {
         restriction_threshold = restriction_threshold - 21000
-        #print(restriction_threshold)
         wait(0)
         default(PrintCountyTable)
     }
     
-
     state PrintCountyTable {
-        print_csv(monthly_county_data.csv, date, County, county_monthly_usage, \
+        print_csv(monthly_county_data.csv, date(), County, county_monthly_usage, \
             restriction_threshold, restriction_month, num_households)
         wait(0)
         default(ResetCountyTable)
@@ -202,5 +193,4 @@ condition REPORT_MONTHLY_USAGE {
         wait(0)
         default(CountyStandby)
     }
-
 }

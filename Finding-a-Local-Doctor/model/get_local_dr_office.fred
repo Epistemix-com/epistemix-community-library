@@ -9,22 +9,15 @@ comment {
 
 }
 
-
 variables {
-
     agent numeric my_dr_office
     agent numeric my_household_latitude
     agent numeric my_household_longitude
-
 }
-
 
 startup {
-
     open_csv(local_dr_office_assignment.csv, "AGENT_ID", "HH_LAT", "HH_LON", "OFFICE_ID")
-    
 }
-
 
 condition GET_LOCAL_DR_OFFICE {
 
@@ -32,41 +25,37 @@ condition GET_LOCAL_DR_OFFICE {
     group_start_state = Excluded
     meta_start_state = Excluded
 
-	comment doc {
+    comment {
 
         A condition that assigns a DrOffice location to an agent. Offices are assigned based on geographical proximity.
 
-		Subjected
-		--------
-		agent : True
-		group : False
-		meta : False
+        Subjected
+        --------
+        agent : True
+        group : False
+        meta : False
 
 
-		Variables
-		---------
-		my_dr_office : agent numeric 
-			agent's assigned dr office based on geographical proximity
-		my_household_latitude : agent numeric 
-			agent's household latitude. If agent has no household, assigned as -999
-		my_household_longitude : agent numeric 
-			agent's household longitude. If agent has no household, assigned as -999
+        Variables
+        ---------
+        my_dr_office : agent numeric 
+            agent's assigned dr office based on geographical proximity
+        my_household_latitude : agent numeric 
+            agent's household latitude. If agent has no household, assigned as -999
+        my_household_longitude : agent numeric 
+            agent's household longitude. If agent has no household, assigned as -999
 
-		Dependencies
-		------------
+        Dependencies
+        ------------
         `configure_dr_office.fred` : CONFIGURE_DR_OFFICE
-
-	}
-
-
-    variables {
-
-        agent list distance_household_to_dr_office
-        agent numeric minimum_distance_household_dr_office
-        agent numeric place_id_index_first_minimum
 
     }
 
+    variables {
+        agent list distance_household_to_dr_office
+        agent numeric minimum_distance_household_dr_office
+        agent numeric place_id_index_first_minimum
+    }
 
     state GetClosestDrOffice {
 
@@ -81,20 +70,19 @@ condition GET_LOCAL_DR_OFFICE {
 
     }
 
-
     state ReportLocalOffice {
 
         my_household_latitude = -999
         my_household_longitude = -999
 
-        if(is_member(Household)) then {
+        if (is_member(Household)) then {
 
-        my_household_latitude = latitude(Household)
-        my_household_longitude = longitude(Household)
+            my_household_latitude = latitude(Household)
+            my_household_longitude = longitude(Household)
 
         }
 
-        print_csv(local_dr_office_assignment.csv, id, my_household_latitude, my_household_longitude, my_dr_office)
+        print_csv(local_dr_office_assignment.csv, id(), my_household_latitude, my_household_longitude, my_dr_office)
 
         wait(0)
         default(Excluded)

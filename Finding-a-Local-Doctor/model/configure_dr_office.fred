@@ -1,6 +1,6 @@
 comment {
 
-   	A model to set up dr. office locations.
+    A model to set up dr. office locations.
 
     Parent model: DR_OFFICE_MODERNISATION_EFFICIENCY
     Author: J. A. McQuade, jessica.mcquade@epistemix.com
@@ -8,230 +8,201 @@ comment {
 
 }
 
-
 place DrOffice {
-
-	has_group_agent = 1
-
+    has_group_agent = 1
 }
-
 
 variables {
+    shared numeric min_no_doctors
+    shared numeric max_no_doctors
+    shared list modernity_factors
+    shared numeric hours_worked_by_dr
 
-	shared numeric min_no_doctors
-	shared numeric max_no_doctors
-	shared list modernity_factors
-	shared numeric hours_worked_by_dr
+    shared list inperson_only
+    shared list telephone_inperson
+    shared list online_telephone_inperson
 
-	shared list inperson_only
-	shared list telephone_inperson
-	shared list online_telephone_inperson
+    shared list_table modernity_hour_split
+    shared list all_dr_office_location_ids
 
-	shared list_table modernity_hour_split
-	shared list all_dr_office_location_ids
-
-	agent list appointment_number_by_type
+    agent list appointment_number_by_type
     agent numeric my_office_size
-	agent numeric my_modernity_factor
+    agent numeric my_modernity_factor
 
-	agent numeric my_available_inperson_appointments
-	agent numeric my_available_phone_appointments
-	agent numeric my_available_online_appointments
+    agent numeric my_available_inperson_appointments
+    agent numeric my_available_phone_appointments
+    agent numeric my_available_online_appointments
 
-	agent numeric my_bookable_inperson_appointments
-	agent numeric my_bookable_phone_appointments
-	agent numeric my_bookable_online_appointments
+    agent numeric my_bookable_inperson_appointments
+    agent numeric my_bookable_phone_appointments
+    agent numeric my_bookable_online_appointments
 
-	min_no_doctors = 1
-	max_no_doctors = 2
-	hours_worked_by_dr = 4 # reduce time under assumption dr has other responsibilities
-	modernity_factors = list(1,2,3)
+    min_no_doctors = 1
+    max_no_doctors = 2
+    hours_worked_by_dr = 4 # reduce time under assumption dr has other responsibilities
+    modernity_factors = list(1, 2, 3)
 
-	inperson_only = list(1, 0, 0)
-	telephone_inperson = list(2, 2, 0)
-	online_telephone_inperson = list(3, 3, 3)
+    inperson_only = list(1, 0, 0)
+    telephone_inperson = list(2, 2, 0)
+    online_telephone_inperson = list(3, 3, 3)
 
-	#inperson_only = list(4, 0, 0)
-	#telephone_inperson = list(3, 4, 0)
-	#online_telephone_inperson = list(3, 3, 6)
-
-	my_available_inperson_appointments = 0
-	my_available_phone_appointments = 0
-	my_available_online_appointments = 0
-
+    my_available_inperson_appointments = 0
+    my_available_phone_appointments = 0
+    my_available_online_appointments = 0
 }
-
 
 startup {
-
-   open_csv(dr_appointment_tracks.csv, "OFFICE_ID", "DATE", "N_INPERSON", "N_PHONE", "N_ONLINE")
-   open_csv(dr_office_modernity.csv, "OFFICE_ID", "MODERNITY")
-
+    open_csv(dr_appointment_tracks.csv, "OFFICE_ID", "DATE", "N_INPERSON", "N_PHONE", "N_ONLINE")
+    open_csv(dr_office_modernity.csv, "OFFICE_ID", "MODERNITY")
 }
-
 
 condition CONFIGURE_DR_OFFICE {
 
-	start_state = Excluded
-	meta_start_state = MetaStart
-	group_start_state = GroupStart
-	
-	comment doc {
+    start_state = Excluded
+    meta_start_state = MetaStart
+    group_start_state = GroupStart
 
-		A condition that reads in data and generates dr office locations and appointments based on 
-		characteristic size and modernity.
+    comment {
 
-		Subjected
-		--------
-		agent : False
-		group : True
-		meta : True
+        A condition that reads in data and generates dr office locations and appointments based on 
+        characteristic size and modernity.
 
-
-		Variables
-		---------
-		min_no_doctors : shared numeric 
-			smallest number of dr in an office
-		max_no_doctors: shared numeric 
-			largest number of dr in an office
-		modernity_factors : shared list
-			key for appointment types offered by an office where
-			0 : in-person only
-			1 : in-person and phone only
-			2 : in-person, phone and online
-		hours_worked_by_dr : shared numeric
-			hours worked per day by a single dr 
-		inperson_only : shared list 
-			number of appointments per hour per appointment type for a dr office only offering in-person appointments
-		telephone_inperson : shared list 
-			number of appointments per hour per appointment type for a dr office only offering in-person and phone appointments
-		online_telephone_inperson : shared list 
-			number of appointments per hour per appointment type for a dr office only offering in-person, phone and online appointments
-		modernity_hour_split : shared list_table 
-			look-up for number of appointments per hour per appointment type for each dr office modernity factor
-		all_dr_office_location_ids : shared list 
-			list of all dr office ids
-		my_office_size : agent numeric 
-			number of drs working in a dr office
-		my_modernity_factor : agent numeric 
-			flag describing the 'modernity' of a dr office based on the appointment types it offers, where
-			0 : in-person 
-			1 : in-person, phone 
-			2 : in-person, phone, online
-		appointment_number_by_type : agent list 
-			number of appointments by type assigned to a dr office, based on its number of drs and modernity
-		my_available_inperson_appointments : agent numeric 
-			number of in-person appointments available at a dr office in a given day
-		my_available_phone_appointments : agent numeric 
-			number of phone appointments available at a dr office in a given day
-		my_available_online_appointments : agent numeric 
-			number of online appointments available at a dr office in a given day
-		my_bookable_inperson_appointments : agent numeric 
-			current number of in-person appointments available at a dr office
-		my_bookable_phone_appointments : agent numeric 
-			current number of phone appointments available at a dr office
-		my_bookable_online_appointments : agent numeric 
-			current number of online appointments available at a dr office
-
-		Dependencies
-		------------
-		None
-
-	}
+        Subjected
+        --------
+        agent : False
+        group : True
+        meta : True
 
 
-	variables{
+        Variables
+        ---------
+        min_no_doctors : shared numeric 
+            smallest number of dr in an office
+        max_no_doctors: shared numeric 
+            largest number of dr in an office
+        modernity_factors : shared list
+            key for appointment types offered by an office where
+            0 : in-person only
+            1 : in-person and phone only
+            2 : in-person, phone and online
+        hours_worked_by_dr : shared numeric
+            hours worked per day by a single dr 
+        inperson_only : shared list 
+            number of appointments per hour per appointment type for a dr office only offering in-person appointments
+        telephone_inperson : shared list 
+            number of appointments per hour per appointment type for a dr office only offering in-person and phone appointments
+        online_telephone_inperson : shared list 
+            number of appointments per hour per appointment type for a dr office only offering in-person, phone and online appointments
+        modernity_hour_split : shared list_table 
+            look-up for number of appointments per hour per appointment type for each dr office modernity factor
+        all_dr_office_location_ids : shared list 
+            list of all dr office ids
+        my_office_size : agent numeric 
+            number of drs working in a dr office
+        my_modernity_factor : agent numeric 
+            flag describing the 'modernity' of a dr office based on the appointment types it offers, where
+            0 : in-person 
+            1 : in-person, phone 
+            2 : in-person, phone, online
+        appointment_number_by_type : agent list 
+            number of appointments by type assigned to a dr office, based on its number of drs and modernity
+        my_available_inperson_appointments : agent numeric 
+            number of in-person appointments available at a dr office in a given day
+        my_available_phone_appointments : agent numeric 
+            number of phone appointments available at a dr office in a given day
+        my_available_online_appointments : agent numeric 
+            number of online appointments available at a dr office in a given day
+        my_bookable_inperson_appointments : agent numeric 
+            current number of in-person appointments available at a dr office
+        my_bookable_phone_appointments : agent numeric 
+            current number of phone appointments available at a dr office
+        my_bookable_online_appointments : agent numeric 
+            current number of online appointments available at a dr office
 
-		shared list list_no_dr
-		shared numeric dr_number_range
-		shared numeric office_sample_size
-		shared numeric no_available_hours
+        Dependencies
+        ------------
+        None
 
-	}
+    }
 
+    variables {
+        shared list list_no_dr
+        shared numeric dr_number_range
+        shared numeric office_sample_size
+        shared numeric no_available_hours
+    }
 
-	state MetaStart {
+    state MetaStart {
 
-		modernity_hour_split[0] = inperson_only
-		modernity_hour_split[1] = telephone_inperson
-		modernity_hour_split[2] = online_telephone_inperson
+        modernity_hour_split[0] = inperson_only
+        modernity_hour_split[1] = telephone_inperson
+        modernity_hour_split[2] = online_telephone_inperson
 
-		all_dr_office_location_ids = read_place_file($FRED_PROJECT/data/place_data_doctors.txt, DrOffice)
+        all_dr_office_location_ids = read_place_file(data/place_data_doctors.txt, DrOffice)
 
-		wait(0)
-		default(Excluded)
+        wait(0)
+        default(Excluded)
 
-	}
+    }
 
+    state GroupStart {
 
-	state GroupStart {
+        if (is_group_agent(DrOffice)) then next(AssignOfficeSize)
 
-		if(is_group_agent(DrOffice)) then next(AssignOfficeSize)
+        wait(0)
+        default(Excluded)
 
-		wait(0)
-		default(Excluded)
+    }
+    
+    state AssignOfficeSize {
 
-	}
+        dr_number_range = sub(max_no_doctors, min_no_doctors) #report - double up
+        list_no_dr = range_list(dr_number_range) + min_no_doctors
+        my_office_size = last(sample_with_replacement(list_no_dr, 1))
 
+        wait(0)
+        default(AssignModernityFactor)
 
-	state AssignOfficeSize {
+    }
 
-		dr_number_range = sub(max_no_doctors, min_no_doctors) #report - double up
-		list_no_dr = range_list(dr_number_range) + min_no_doctors
-		my_office_size = last(sample_with_replacement(list_no_dr, 1))
+    state AssignModernityFactor {
 
-		wait(0)
-		default(AssignModernityFactor)
+        # Scenario_lever_1
+        # my_modernity_factor = last(sample_with_replacement(modernity_factors, 1)) # random
+        # my_modernity_factor = 1 # old-school
+        my_modernity_factor = 3 # technologically adept
 
-	}
+        print_csv(dr_office_modernity.csv, id(), my_modernity_factor)
 
+        wait(0)
+        default(DetermineBookableAppt)
 
-	state AssignModernityFactor {
-        
-		#Scenario_lever_1
-		#my_modernity_factor = last(sample_with_replacement(modernity_factors, 1)) # random
-		#my_modernity_factor = 1 # old-school
-		my_modernity_factor = 3 # technologically adept
+    }
 
-		print_csv(dr_office_modernity.csv, id, my_modernity_factor)
+    state DetermineBookableAppt {
 
-		wait(0)
-		default(DetermineBookableAppt)
+        no_available_hours = hours_worked_by_dr*my_office_size
+        appointment_number_by_type = apply(modernity_hour_split[my_modernity_factor-1], no_available_hours * _) 
 
-	}
+        my_bookable_inperson_appointments = appointment_number_by_type[0]
+        my_bookable_phone_appointments = appointment_number_by_type[1]
+        my_bookable_online_appointments = appointment_number_by_type[2]
 
+        wait(0)
+        default(RefreshAvailableAppointments)
 
-	state DetermineBookableAppt {
+    }
 
-		no_available_hours = hours_worked_by_dr*my_office_size
-		appointment_number_by_type = apply(modernity_hour_split[my_modernity_factor-1], no_available_hours * _) 
+    state RefreshAvailableAppointments {
 
-		my_bookable_inperson_appointments = appointment_number_by_type[0]
-		my_bookable_phone_appointments = appointment_number_by_type[1]
-		my_bookable_online_appointments = appointment_number_by_type[2]
+        print_csv(dr_appointment_tracks.csv, id(), date(), my_available_inperson_appointments, my_available_phone_appointments, my_available_online_appointments)
 
-		wait(0)
-		default(RefreshAvailableAppointments)
+        my_available_inperson_appointments = my_bookable_inperson_appointments
+        my_available_phone_appointments = my_bookable_phone_appointments
+        my_available_online_appointments = my_bookable_online_appointments
 
-	}
+        wait(24)
+        default(RefreshAvailableAppointments)
 
-
-	state RefreshAvailableAppointments {
-
-		print_csv(dr_appointment_tracks.csv, id, today, my_available_inperson_appointments, my_available_phone_appointments, my_available_online_appointments)
-		
-		my_available_inperson_appointments = my_bookable_inperson_appointments
-		my_available_phone_appointments = my_bookable_phone_appointments
-		my_available_online_appointments = my_bookable_online_appointments
-	
-		wait(24)
-		default(RefreshAvailableAppointments)
-
-	}
+    }
 }
-
-
-
-
-
-

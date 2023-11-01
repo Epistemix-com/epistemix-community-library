@@ -8,9 +8,7 @@ comment {
 
 }
 
-
 variables {
-
     agent numeric health
     agent list appointment_preference
     agent numeric current_attempts_at_booking
@@ -25,12 +23,10 @@ variables {
     health = 0
     impatience = 0
     current_attempts_at_booking = 0
-	inperson_only_pref = list(0)
-	telephone_inperson_pref = list(0, 1)
-	online_telephone_inperson_pref = list(0, 1, 2)
-
+    inperson_only_pref = list(0)
+    telephone_inperson_pref = list(0, 1)
+    online_telephone_inperson_pref = list(0, 1, 2)
 }
-
 
 condition CONFIGURE_AGENT_HEALTH {
 
@@ -38,8 +34,7 @@ condition CONFIGURE_AGENT_HEALTH {
     group_start_state = Excluded
     meta_start_state = MetaStart
 
-
-    comment doc {
+    comment {
         
         A condition that configures an agent's initial health status. 
         Those older than 60 or younger than 10 are more likely to have poorer initial health.
@@ -75,37 +70,33 @@ condition CONFIGURE_AGENT_HEALTH {
             index list describing preference for agents accepting in-person, phone and online appointments
         all_appointment_preferences : shared list_table 
             list table describing all preference indexes for booking appointments
-		
+
         Dependencies
-		------------
-		None
+        ------------
+        None
 
     }
 
-    variables{
-
+    variables {
         agent numeric appointment_preference_idx
-
     }
 
+    state MetaStart {
 
-	state MetaStart {
+        all_appointment_preferences[0] = inperson_only_pref
+        all_appointment_preferences[1] = telephone_inperson_pref
+        all_appointment_preferences[2] = online_telephone_inperson_pref
 
-		all_appointment_preferences[0] = inperson_only_pref
-		all_appointment_preferences[1] = telephone_inperson_pref
-		all_appointment_preferences[2] = online_telephone_inperson_pref
+        wait(0)
+        next(Excluded)
 
-		wait(0)
-		next(Excluded)
-
-	}
-
+    }
 
     state InitialiseHealth {
 
         health = round(abs(normal(0, 1)))
-        if(gte(age, 60)) then health = health + 1
-        if(lte(age, 10)) then health = health + 1
+        if(gte(age(), 60)) then health = health + 1
+        if(lte(age(), 10)) then health = health + 1
         if(health > 4) then health = 4
 
         wait(0)
@@ -113,10 +104,9 @@ condition CONFIGURE_AGENT_HEALTH {
 
     }
 
-
     state GetAppointmentPreference {
 
-        appointment_preference_idx = last(sample_with_replacement(list(0,1,2), 1))
+        appointment_preference_idx = last(sample_with_replacement(list(0, 1, 2), 1))
         appointment_preference = all_appointment_preferences[appointment_preference_idx]
 
         wait(0)
@@ -124,12 +114,3 @@ condition CONFIGURE_AGENT_HEALTH {
 
     }
 }
-
-
-
-
-
-
-
-
-

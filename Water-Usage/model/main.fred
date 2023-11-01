@@ -15,26 +15,23 @@ comment {
 }
 
 simulation {
-    locations = Loving_County_TX
+    locations = Kewaunee_County_WI
     start_date = 2022-Jan-01
     end_date = 2025-Jan-01
 }
 
 variables {
-    
     agent numeric household_usage
     shared numeric county_monthly_usage
-    
 }
 
 place Household {
     has_group_agent = 1
 }
 
-
 place County {
     has_group_agent = 1
 }
 
-include model/water_activity.fred  
-include model/report_monthly_usage.fred
+include water_activity.fred
+include report_monthly_usage.fred

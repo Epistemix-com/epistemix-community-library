@@ -11,19 +11,13 @@ comment {
 
 }
 
-
 simulation {
-
-   locations = Kewaunee_County_WI
-   start_date = 2020-Jan-01
-   end_date = 2020-Feb-01
-
+    locations = Kewaunee_County_WI
+    start_date = 2020-Jan-01
+    end_date = 2020-Feb-01
 }
 
-
-include model/configure_dr_office.fred
-include model/configure_agent_health.fred
-include model/get_local_dr_office.fred
-include model/health_update.fred
-
-
+include configure_dr_office.fred
+include configure_agent_health.fred
+include get_local_dr_office.fred
+include health_update.fred
