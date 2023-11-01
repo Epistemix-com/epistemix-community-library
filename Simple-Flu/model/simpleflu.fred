@@ -228,7 +228,7 @@ condition RECORD_EXPOSURES {
     
     state Record {
         if (is_member(Household)) then print_csv( \
-            exposure_locs.csv, id, race, age, income, today, \
+            exposure_locs.csv, id(), race, age(), income, today(), \
             my_exposure_location, my_exposure_latitude, my_exposure_longitude, \
             latitude(Household), longitude(Household) \
         )

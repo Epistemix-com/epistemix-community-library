@@ -11,12 +11,7 @@ variables {
 
 agent_startup {
 	# 2% of males over 17 are MSM (should be calibrated to observed data)
-	if (age > 17 & sex == male & bernoulli(0.02) == 1) then msm = 1
+	if (age() > 17 & sex == male & bernoulli(0.02) == 1) then msm = 1
 	if (msm == 1) then msm_count = msm_count + 1
-    if (msm == 1) then push(msm_list,id)
+    if (msm == 1) then push(msm_list, id())
 }
-
-
-
-
-

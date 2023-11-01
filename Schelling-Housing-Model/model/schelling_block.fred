@@ -89,7 +89,7 @@ condition SETUP_AGENTS {
    }
 
    state setupHouseholders {
-      print_csv(household_info.csv,Household,Block_Group,latitude(Household),longitude(Household),id)
+      print_csv(household_info.csv,Household,Block_Group,latitude(Household),longitude(Household),id())
       wait(0)
       next(createEmptyHouseholds) with prob(frac_empty)
       default(ReportInformation)
@@ -105,7 +105,7 @@ condition SETUP_AGENTS {
    }
     
    state ReportInformation {
-      print_csv(agent_info.csv,id,my_color)
+      print_csv(agent_info.csv, id(), my_color)
       wait(0)
       next(Excluded)
     }
@@ -143,7 +143,7 @@ condition DETERMINE_BLOCK_COLOR {
    state updateColorFracs {
        frac_blue = block_blue / (block_blue + block_red)
        frac_red = 1 - frac_blue
-       print_csv(block_color_history.csv,id,today,block_blue,block_red,frac_blue,frac_red,block_blue+block_red)
+       print_csv(block_color_history.csv,id(),today(),block_blue,block_red,frac_blue,frac_red,block_blue+block_red)
        if (has_agent_moved == 1) then send(members(Block_Group),HAPPINESS,EvaluateHappiness)
        has_agent_moved = 0
        wait(24)
@@ -225,7 +225,7 @@ condition MOVE {
    meta_start_state = Excluded
 
    state reportHousehold {
-      print_csv(agent_house_history.csv,id,today, Household,Block_Group,my_color)
+      print_csv(agent_house_history.csv,id(),today(), Household,Block_Group,my_color)
       wait(0)
       if(my_happiness == 0) then next(Move)
       default(Stay)
@@ -265,4 +265,3 @@ condition MOVE {
       next(reportHousehold)
    }
 }
-
