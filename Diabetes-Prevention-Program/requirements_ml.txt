@@ -1,0 +1,3 @@
+sqlalchemy==2.0.2
+scikit-learn=1.3.1
+epx-pop @ git+https://github.com/Epistemix-com/epx-pop@v0.2.0
