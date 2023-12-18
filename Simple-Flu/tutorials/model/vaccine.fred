@@ -1,0 +1,63 @@
+variables {
+    shared numeric days_until_effective
+    shared numeric initial_vaccines
+    shared numeric vaccine_delay
+    shared numeric vaccine_effectiveness
+    shared numeric willing_to_consider
+}
+
+include vaccine_parameters.fred
+
+condition RESP_DISEASE_VACCINE {
+    meta_start_state = ImportStart
+    start_state = Start
+    transmission_mode = proximity
+    transmissibility = 1
+    exposed_state = Decide
+
+    state Start {
+        wait(0)
+        next(Considering) with prob(willing_to_consider)
+        default(Excluded)
+    }
+
+    state Considering {
+        RESP_DISEASE_VACCINE.sus = 1
+        wait()
+        default()
+    }
+
+    state Decide {
+        RESP_DISEASE_VACCINE.sus = 0
+        wait(24)
+        default(Taker)
+    }
+
+    state Taker {
+        wait(24 * days_until_effective)
+        next(Immune) with prob(vaccine_effectiveness)
+        default(Failed)
+    }
+
+    state Immune {
+        RESP_DISEASE.sus = 0
+        wait()
+        default()
+    }
+
+    state Failed {
+        wait()
+        default()
+    }
+
+    state ImportStart {
+        wait(24 * vaccine_delay + 1)
+        default(ImportVaccine)
+    }
+
+    state ImportVaccine {
+        import_exposures(RESP_DISEASE_VACCINE, initial_vaccines*size(Population))
+        wait()
+        default()
+    }
+}
