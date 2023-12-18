@@ -35,18 +35,12 @@ condition RESP_DISEASE {
     start_state = Susceptible
     exposed_state = Exposed
     meta_start_state = Import
-    group_start_state = GroupStart
     
     state Import {
         print("Importing exposures!")
         import_exposures(RESP_DISEASE, 10)
         wait()
         default()
-    }
-    
-    state GroupStart {
-        wait(0)
-        default(Excluded)
     }
 
     state Susceptible {
@@ -132,12 +126,7 @@ condition RECORD_EXPOSURES {
     }
 
     output = 1
-    start_state = Start
-
-    state Start {
-        wait(0)
-        default(Wait)
-    }
+    start_state = Wait
 
     state Wait {
         wait()
