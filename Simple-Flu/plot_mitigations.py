@@ -5,6 +5,7 @@ import numpy as np
 
 import plotly
 import plotly.express as px
+import plotly.graph_objects as go
 import plotly.io as pio
 
 from epxexec.visual.utils import default_plotly_template
@@ -293,4 +294,45 @@ def plot_time_series_by_demog_group(df: pd.DataFrame) -> plotly.graph_objs.Figur
         height=450,
     )
 
+    return fig
+
+def plot_scenario_ecdf(jobs = [], scenarios = [], scenario_name = ""):
+    
+    job_dfs = []
+    job_peak_dates = []
+    job_peak_y = []
+    job_peak_vals = []
+    for job, scenario in zip(jobs, scenarios):
+        job_df = get_states(job)[["sim_date", "Exposed"]]
+        idxmax = job_df["Exposed"].idxmax()
+        max_row = job_df.loc[idxmax]
+        df_to_max_row = job_df.loc[list(range(idxmax))]
+        job_peak_dates.append(max_row["sim_date"])
+        job_peak_vals.append(max_row["Exposed"])
+        job_peak_y.append(df_to_max_row["Exposed"].sum())
+        job_df["Scenario"] = scenario
+        job_dfs.append(job_df)
+        
+    df = pd.concat(job_dfs)
+    fig = px.ecdf(df, x="sim_date", y="Exposed", color="Scenario", ecdfnorm=None)
+    
+    fig.add_trace(go.Scatter(
+        x=job_peak_dates,
+        y=job_peak_y,
+        mode="markers+text",
+        text=[f"{peak}" for peak in job_peak_vals],
+        textposition="top center",
+        name="Size of Peak"
+    ))
+
+    fig.update_layout(
+        font_family="Epistemix Label",
+        yaxis_title="Cumulative Infections",
+        xaxis_title="Date",
+        title=f"Scenario Exploration: {scenario_name}",
+        title_font_size=24,
+        xaxis_range=["2023-01-01","2023-06-30"],
+        hovermode="x",height=450,
+    )
+    
     return fig
