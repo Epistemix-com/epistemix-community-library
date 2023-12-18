@@ -144,6 +144,7 @@ condition RECORD_EXPOSURES {
         if (was_exposed_in(RESP_DISEASE, Block_Group))  then next(Block_Group)
         if (was_exposed_in(RESP_DISEASE, Census_Tract)) then next(Census_Tract)
         if (was_exposed_in(RESP_DISEASE, County))       then next(County)
+        if (was_exposed_in(RESP_DISEASE, Grade))        then next(School)
         if (was_exposed_in(RESP_DISEASE, School))       then next(School)
         if (was_exposed_in(RESP_DISEASE, Workplace))    then next(Workplace)
 
