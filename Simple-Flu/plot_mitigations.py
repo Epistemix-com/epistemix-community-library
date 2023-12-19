@@ -49,7 +49,7 @@ def get_explocs(job):
     exp_data = job.runs[1].get_csv_output("exposure_locs.csv")
     exp_data["today"] = pd.to_datetime(exp_data["today"], format="%Y%m%d")
     exp_data["simday"] = (
-        pd.to_datetime(exp_data.today) - pd.to_datetime("2022-01-01")
+        pd.to_datetime(exp_data.today) - pd.to_datetime("2023-01-01")
     ).dt.days
     exp_data = exp_data.assign(
         ExposureLocation=exp_data.my_resp_exp_loc.map(
