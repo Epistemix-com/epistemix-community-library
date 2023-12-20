@@ -16,8 +16,8 @@ include stayhome.fred
 include vaccine.fred
 
 variables {
-    shared numeric flu_delay
-    flu_delay = 90
+    
+    flu_delay = 15
 }
 
 condition RESP_DISEASE {

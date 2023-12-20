@@ -1,5 +1,6 @@
 variables {
     shared numeric days_until_effective
+    shared numeric flu_delay
     shared numeric initial_vaccines
     shared numeric vaccine_delay
     shared numeric vaccine_effectiveness
