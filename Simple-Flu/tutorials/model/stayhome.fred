@@ -4,14 +4,14 @@ condition STAY_HOME {
     state No {
         attend()
         wait()
-        next()
+        default()
     }
 
     state Yes {
         skip()
         attend(Household)
         wait()
-        next()
+        default()
     }
 }
 
