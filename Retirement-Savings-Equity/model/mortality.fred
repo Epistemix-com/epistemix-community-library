@@ -1,0 +1,43 @@
+variables { 
+    agent numeric mortality_key
+    agent numeric mortality_prob
+    shared list_table mortality_probs
+}
+
+startup {
+     read_list_table(mortality_probs, data/mortality_probs.csv, 0, 1)
+}
+
+agent_startup {
+    mortality_key = (10 * (1 + (race == african_american)) * is_in_list(list(african_american, white), race)) + (sex == male)
+}
+
+condition MORTALITY {
+
+    start_state = Alive
+    
+    state Alive {
+        wait(until(Jul, 1))
+        default(Test_Mortality)
+    }
+    
+    state Test_Mortality {
+        if (age() < 30) then {
+            mortality_prob = 0
+        } else {
+            mortality_prob = select(lookup_list(mortality_probs, mortality_key), min(age() - 30, 100 - 30))
+        }
+        wait(0)
+        next(Die) with prob(mortality_prob)
+        default(Alive)
+    } 
+    
+    state Die {
+        if (length(members(Household)) > 1) then {
+            tell(members(Household), savings, savings / (length(members(Household)) - 1))
+        }
+        die()
+        wait(0)
+        default(Excluded)
+    }
+}

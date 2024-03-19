@@ -1,0 +1,18 @@
+[metadata]
+name = "Retirement Savings Equity"
+description = """In this model, agents accumulate (and subsequently deplete) their retirement savings according to simple rules. Then, an equity analysis is performed on the output of the model, comparing the distribution of each race in the population with the distribution of wealth owned by each race."""
+categories = [
+    "Social Science"
+]
+authors = [
+    "Noah Burrell <noah.burrell@epistemix.com>"
+]
+version = "0.1.0"
+fred_versions = [
+    ">=10.1.0",
+    "<11"
+]
+
+[run_options]
+src_dir = "model/"
+entrypoint = "main.fred"
