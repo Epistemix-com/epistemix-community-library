@@ -1,0 +1,12 @@
+simulation {
+    seed = 31468
+}
+
+startup {
+    days_until_effective = 14
+    flu_delay = 15
+    initial_vaccines = 0.3
+    vaccine_delay = 0
+    vaccine_effectiveness = 0.8
+    willing_to_consider = 0.5
+}

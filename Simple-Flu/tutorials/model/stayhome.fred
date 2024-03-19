@@ -1,0 +1,24 @@
+condition STAY_HOME {
+    start_state = No
+
+    state No {
+        attend()
+        wait()
+        default()
+    }
+
+    state Yes {
+        skip()
+        attend(Household)
+        wait()
+        default()
+    }
+}
+
+state RESP_DISEASE.InfectiousSymptomatic {
+    if (bernoulli(0.5)) then set_state(STAY_HOME, Yes)
+}
+
+state RESP_DISEASE.Recovered {
+    set_state(STAY_HOME, No)
+}

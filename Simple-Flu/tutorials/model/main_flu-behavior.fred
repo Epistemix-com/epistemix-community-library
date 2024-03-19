@@ -1,0 +1,15 @@
+comment {
+
+    An extension of the basic respiratory disease model with a behavioral component:
+        Agents may stay home when they are sick and have symptoms.
+
+}
+
+simulation {
+    locations =  Kewaunee_County_WI
+    start_date = 2023-Jan-01
+    end_date = 2023-Jul-01
+}
+
+include ./../../model/simpleflu.fred
+include stayhome.fred
