@@ -1,1 +1,3 @@
 manifest.toml
+.ipynb_checkpoints
+__pycache__
