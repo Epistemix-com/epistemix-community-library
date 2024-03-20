@@ -1,0 +1,62 @@
+variables {
+    agent numeric household_income
+    
+    agent numeric income
+    agent numeric savings
+    
+    agent numeric consumption
+}
+
+startup {
+    open_csv(savings.csv, "id", "age", "sex", "race", "income", "savings")
+}
+
+agent_startup {
+    # initialize income, then initialize savings as a function of income 
+    if (age() >= 18 & length(members(Household)) > 0) then {
+        income = household_income / length(filter_agents(members(Household), ask(_, age()) >= 18))
+        savings = (age() > 30) * (income * div((age() - 1 - 25), 5))
+        # annual savings inspired by guidelines from this article: 
+            # https://www.nerdwallet.com/article/investing/how-much-save-by-30
+        consumption = uniform(0.5, 1.5) # how much of pre-retirement income will be consumed annually in retirement
+    }
+}
+
+condition SAVING {
+
+    start_state = Start
+
+    state Start {
+        wait(0)
+        if (age() >= 65) then next(Consuming)
+        default(Saving)
+    }
+    
+    state Saving {
+        savings = savings + (age() >= 30) * div(income, 5)
+        wait(until(Jun, 1))
+        if (age() >= 65) then next(Retiring)
+        default(Saving)
+    }
+    
+    state Retiring {
+        savings = savings + exp(sum( \
+            list(alpha, beta, delta) * list(0.353, 1.17, 2.04) \
+        )) - 10000
+        wait(0)
+        if (age() % 5 == 0) then next(Report_Savings)
+        default(Consuming)
+    }
+    
+    state Report_Savings {
+        print_csv(savings.csv, id(), age(), sex, race, income, savings)
+        wait(0)
+        default(Consuming)
+    }
+    
+    state Consuming {
+        savings = savings - (consumption*income)
+        wait(until(Jun, 1))
+        default(Consuming)
+    }
+}

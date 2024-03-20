@@ -1,0 +1,77 @@
+variables {
+    shared list_table education_probs
+
+    # built-in synthpop variables
+    agent numeric race
+    agent numeric sex
+    
+    # predictors of behavioral biases
+    agent numeric iq
+    agent numeric fin_lit
+    agent list education_one_hot
+    agent list race_one_hot
+    
+    # quantifications of behavioral biases to predict retirement savings
+    agent numeric alpha 
+    agent numeric beta 
+    agent numeric delta 
+}
+
+variables {
+    shared list num_denom # intermediate_variable to store two values that will be used in division
+}
+
+startup {
+     read_list_table(education_probs, data/education_probs.csv, 0, 1)
+}
+
+agent_startup {
+    # sample iq and fin_lit values from a Beta distribution with the mean and standard deviation given in the paper
+    num_denom = partial_sums(list(gamma(1.2233027480453043, 1), gamma(0.3912631314689555, 1)))
+    fin_lit = 3 * (num_denom[0] / num_denom[1])
+    
+    num_denom = partial_sums(list(gamma(0.7435920952412072, 1), gamma(0.9417934334106677, 1)))
+    iq = 5 * (num_denom[0] / num_denom[1])
+}
+
+agent_startup {
+
+    if (age() > 25) then {
+        race_one_hot = list((race==african_american), (race==american_indian), (race==asian))
+        push(race_one_hot, 1 - sum(race_one_hot)) # other race
+
+        education_one_hot = list(0, 0, 0, 0, 0)
+        # print(lookup_list(education_probs, -1 + 3*(sex == male) + length(filter_values(list(25, 35, 55), <=, age))))
+        set(education_one_hot, \
+            select(sample_with_replacement(range(5), 1, \
+                    lookup_list(education_probs, \
+                        -1 + 3*(sex == male) + length(filter_values(list(25, 35, 55), <=, age())))), \ # computes correct key for education_probs table
+                0), \
+            1)
+        erase(education_one_hot, 0)
+    }
+}
+
+agent_startup {
+    # predict values for alpha, beta, and delta using the regression values from the paper
+    if (age() > 25) then {
+        alpha = 0.088 * iq + \
+                0.011 * fin_lit + \
+                sum(list(0.047, -0.004, 0.085, 0.091) * education_one_hot) + \
+                -0.043 * (sex == female) + \
+                sum(list(-0.022, -0.198, -0.066, 0.003) * race_one_hot) + \
+                normal(0, 0.1)
+        beta  = 0.001 * iq + \ 
+                0.008 * fin_lit + \ 
+                sum(list(-0.020, -0.032, -0.025, 0.003) * education_one_hot) + \ 
+                0.003 * (sex == female) + \ 
+                sum(list(-0.001, 0.017, -0.066, -0.024) * race_one_hot) + \
+                normal(0, 0.1)
+        delta = 0.017 * iq + \ 
+                -0.005 * fin_lit + \ 
+                sum(list(0.000, 0.017, 0.025, 0.033) * education_one_hot) + \ 
+                -0.002 * (sex == female) + \ 
+                sum(list(0.007, -0.013, 0.002, 0.013) * race_one_hot) + \
+                normal(0, 0.1)
+    }
+}
