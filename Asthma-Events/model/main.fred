@@ -1,0 +1,159 @@
+simulation {
+    locations =  Hennepin_County_MN
+    start_date = 2024-Jan-01
+    end_date = 2024-Dec-30
+}
+
+variables {
+	shared list_table daily_aqi
+	
+	agent numeric sex
+    agent numeric race
+    agent numeric income
+	agent numeric household_elevation
+	agent numeric elevation_factor
+	agent numeric my_insurance
+	
+	agent numeric my_asthma_risk
+	
+	shared numeric severity
+	severity = 0.25
+	
+	shared numeric air_quality
+	air_quality = 75
+	
+	agent numeric agent_type
+	agent_type = 1
+	agent numeric lat
+	agent numeric lon
+	
+	shared list hospitals
+	agent list my_hosp_dist_list
+	agent list my_hosp_argsort
+	agent numeric min_hosp_dist
+	agent numeric hosp_dist_index
+	agent numeric my_hosp
+	
+	agent numeric my_house_lat
+	agent numeric my_house_lon
+}
+
+startup {
+	open_csv(agent_info.csv, "id", "age", "sex", "race", "insurance", "risk", "status", "hh_lat", "hh_lon", "hh_elev")
+	open_csv(asthma_event.csv, "id", "day", "aqi", "hosp")
+	
+	read_list_table(daily_aqi, data/input_aqi_msp.csv, 0, 1)
+	read_agent_file(data/input_hospitals.csv)
+}
+
+
+use model/Read_Attribute {
+    input_file = data/asthma_risk.csv
+    attribute = my_asthma_risk
+    column = 4
+    sex_column = 0
+    race_column = 1
+    min_age_column = 2
+    max_age_column = 3
+}
+
+condition ENVIRONMENT {
+	start_state = Excluded
+	meta_start_state = Start
+	
+	state Start {
+		wait(0)
+		default(Update_AQI)
+	}
+	
+	state Update_AQI {
+		#day_key = day_of_year()
+		air_quality = last(daily_aqi[day_of_year()])
+		wait(24)
+		default(Update_AQI)
+	}
+}
+
+condition SETUP_HOSPITAL {
+	start_state = Start
+	
+	state Start {
+		if (agent_type==2) then push(hospitals, id())
+		wait(0)
+		default(Excluded)
+	}
+}
+ 
+condition ASTHMA {
+	start_state = Start
+
+	state Start {
+		wait(0)
+		if (is_member(Household)) then next(Assign_Asthma_Status)
+		default(Excluded)
+	}
+		
+	state Assign_Asthma_Status {
+		household_elevation = elevation(Household)
+		my_insurance = uniform(0,1)
+		#if (is_in_range(age(),18,65)) then (my_insurance = uniform(0,1)+0.2)
+		wait(0)
+		next(At_Risk) with prob(my_asthma_risk)
+		default(Negative)
+	}
+
+	state At_Risk {
+		
+		my_house_lat = latitude(Household)
+		my_house_lon = longitude(Household)
+		
+		my_hosp_dist_list = apply(hospitals, distance(my_house_lat, my_house_lon, ask(_, lat), ask(_, lon)))
+		my_hosp_argsort = arg_sort(my_hosp_dist_list)
+		
+		min_hosp_dist = min(my_hosp_dist_list)
+		hosp_dist_index = last(index_values(my_hosp_dist_list, =, min_hosp_dist))
+		my_hosp = hospitals[hosp_dist_index]
+	
+		print_csv(agent_info.csv, id(), age(), sex, race, my_insurance, my_asthma_risk, 1, latitude(Household),longitude(Household), elevation(Household))
+		wait(24)
+		default(Check_For_Event)
+	}
+	
+	state Negative {
+		print_csv(agent_info.csv, id(), age(), sex, race, my_insurance, my_asthma_risk, 0, latitude(Household),longitude(Household), elevation(Household))
+		wait(0)
+		default(Excluded)
+	}
+		
+	state Check_For_Event {
+		wait(0)
+		if (is_in_range(air_quality,0,75)) then next(Acute) with prob(0.001*severity)
+		if (is_in_range(air_quality,76,125) & is_in_range(household_elevation,0,250)) then next(Acute) with prob(0.001*severity)
+		if (is_in_range(air_quality,76,125) & is_in_range(household_elevation,251,500)) then next(Acute) with prob(0.002*severity)
+		if (is_in_range(air_quality,76,125) & is_in_range(household_elevation,501,750)) then next(Acute) with prob(0.005*severity)
+		if (is_in_range(air_quality,76,125) & is_in_range(household_elevation,751,2000)) then next(Acute) with prob(0.01*severity)
+		if (is_in_range(air_quality,126,200) & is_in_range(household_elevation,0,250)) then next(Acute) with prob(0.005*severity)
+		if (is_in_range(air_quality,126,200) & is_in_range(household_elevation,251,500)) then next(Acute) with prob(0.005*severity)
+		if (is_in_range(air_quality,126,200) & is_in_range(household_elevation,501,750)) then next(Acute) with prob(0.01*severity)
+		if (is_in_range(air_quality,126,200) & is_in_range(household_elevation,751,2000)) then next(Acute) with prob(0.02*severity)
+
+		default(Wait)
+	}
+	
+	state Acute {
+		## create 1-2 day lag time between AQI and asthma event as reported in literature
+		wait(24*uniform(0.5,2))
+		default(Recovered)
+	}
+	
+	state Wait {
+		wait(24)
+		default(Check_For_Event)
+	}
+	
+	state Recovered {
+		print_csv(asthma_event.csv, id(), date(), air_quality, my_hosp)
+		wait(24*8)
+		default(Check_For_Event)
+	}
+}
