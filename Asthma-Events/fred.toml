@@ -1,8 +1,6 @@
 [metadata]
 name = "Asthma Events"
-description = """
-A model that gives some agents an asthma attribute, and triggers asthma events based on the input daily air quality (AQI).
-"""
+description = "A model that gives some agents an asthma attribute, and triggers asthma events based on the input daily air quality (AQI)."
 categories = [
     "Epidemiology"
 ]
