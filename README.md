@@ -28,3 +28,7 @@ dependencies of our named dependencies) in `requirements.txt` from the abstract
 ## Manifest
 
 The `generate-manifest.sh` file is executed when a commit is pushed to the `main` branch. This generates a file called `manifest.toml`, which is then stored in the `model-library-assets` S3 bucket and is used by the API. It is not stored in GitHub.
+
+## Adding a new .toml file
+
+When adding a new toml file, it's important to include a `banner` key with a reference to an Epistemix logo png file.  You can find examples of this in the current Community Models as of 4/4/24. 
