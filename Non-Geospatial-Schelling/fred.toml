@@ -1,0 +1,24 @@
+[metadata]
+name = "Non-Geospatial Schelling"
+description = """In this set of models, we explore the following question: How (if at all) do the dynamics of the classic Schelling model of residential segregation change if we change the topology of the network that determines what constitutes a "neighborhood"?"""
+categories = [
+    "Social Science"
+]
+authors = [
+    "Noah Burrell <noah.burrell@epistemix.com>",
+    "Benjamin Panny <BMP83@pitt.edu>"
+]
+version = "0.1.0"
+fred_versions = [
+    ">=10.1.0",
+    "<11"
+]
+
+[run_options]
+src_dir = "model/"
+entrypoints = [
+    "schelling_grid.fred",
+    "schelling_random_network.fred",
+    "schelling_random_network_2.fred",
+    "schelling_random_network_3.fred"
+]

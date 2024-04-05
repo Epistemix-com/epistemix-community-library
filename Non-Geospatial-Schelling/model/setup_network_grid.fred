@@ -1,0 +1,87 @@
+variables {
+    shared numeric i    # iterator variable
+    shared numeric link # iterator variable
+    shared list shadows
+}
+
+network Shadow_Network {
+   is_directed     = 0
+   has_group_agent = 0
+   output_interval = 0 # output not recorded
+}
+
+network Friendship {
+   is_directed     = 0
+   has_group_agent = 0
+   output_interval = 1 # output recorded every day
+}
+
+agent_startup {
+    join(Friendship)
+    join(Shadow_Network)
+}
+
+condition SETUP_NETWORK {
+
+    variables {
+        shared numeric max_id
+        shared numeric min_id
+        shared numeric N
+        shared numeric S
+        shared numeric row_length
+        
+        shared list my_links
+    }
+
+    start_state = Pruning_Edges
+    meta_start_state = Generating_Edges
+    
+    state Generating_Edges {
+        row_length = 10
+        min_id = min(get_population())
+        max_id = max(get_population())
+        
+        for (i, get_population()) do {
+            N = (i - row_length) % (max_id - min_id + 1) + min_id
+            S = (i + row_length) % (max_id - min_id + 1) + min_id
+            my_links = list( \
+                            (N + 9)*((N % row_length) == 0) + (N - 1)*((N % row_length) != 0),                           \ # NW
+                            N,                                                                                           \ # N
+                            (N - 9)*((N % row_length) == row_length - 1) + (N + 1)*((N % row_length) != row_length - 1), \ # NE
+                            (i + 9)*((i % row_length) == 0) + (i - 1)*((i % row_length) != 0),                           \ # W
+                            (i - 9)*((i % row_length) == row_length - 1) + (i + 1)*((i % row_length) != row_length - 1), \ # E
+                            (S + 9)*((S % row_length) == 0) + (S - 1)*((S % row_length) != 0),                           \ # SW
+                            S,                                                                                           \ # S
+                            (S - 9)*((S % row_length) == row_length - 1) + (S + 1)*((S % row_length) != row_length - 1), \ # SE
+                        )
+            
+            for (link, my_links) do {
+                add_edge(Friendship, i, link)
+                add_edge(Shadow_Network, i, link)
+            }
+        }
+        wait(0)
+        default(Excluded)
+    }
+    
+    state Pruning_Edges {
+        if (my_color == -1) then {
+            push(shadows, id())
+            for (link, outlinks(Friendship, id())) do {
+                tell(link, my_open_spots, ask(_, my_open_spots) + 1)
+                delete_edge(Friendship, id(), link)
+            }
+            quit(Friendship)
+        }
+        wait(1)
+        if (my_color != -1) then next(Randomize_Network)
+        default(Excluded)
+    }
+    
+    state Randomize_Network {
+        set_state(REWIRE, Delete_Links)
+        wait(1)
+        if (sim_day() == 0) then next(Randomize_Network)
+        default(Excluded)
+    }
+}

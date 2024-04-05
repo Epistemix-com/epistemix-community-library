@@ -1,0 +1,9 @@
+comment {
+    SCHELLING MODEL ON A RANDOM NETWORK
+    - rewire one link when unhappy
+}
+
+include core.fred
+include setup_network.fred
+include happiness.fred
+include rewire_one_link.fred

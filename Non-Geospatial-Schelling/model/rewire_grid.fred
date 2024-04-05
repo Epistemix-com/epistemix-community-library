@@ -1,0 +1,63 @@
+condition REWIRE {
+
+    variables {
+        shared numeric shadow
+
+        shared list old
+        shared list new
+        shared list old_edges
+        shared list new_edges
+    }
+
+    # start_state is different than analogous conditions
+    start_state = Exclude 
+    
+    state Exclude {
+        wait(0)
+        if (my_color == -1) then next(Excluded) # exclude "shadow" agents
+        default(Waiting)
+    }
+    
+    state Waiting {
+        wait()
+        default()
+    }
+    
+    state Delete_Links {
+        shadow = select(sample_without_replacement(shadows, 1), 0)
+        old = outlinks(Shadow_Network, id())
+        new = outlinks(Shadow_Network, shadow) 
+        
+        new_edges = select(set_difference(new, old), _ != id()) # filter out duplicates and self-loops
+        old_edges = select(set_difference(old, new), _ != shadow) # filter out duplicates and self-loops
+        
+        # TODO: Filter out edge between id() and shadow
+        
+        for (i, new_edges) do {
+            delete_edge(Shadow_Network, shadow, i)
+            add_edge(Shadow_Network, id(), i)
+        }
+        for (i, old_edges) do {
+            add_edge(Shadow_Network, shadow, i)
+            delete_edge(Shadow_Network, id(), i)
+        }
+            
+        wait(0)
+        default(Add_Links)
+    }
+    
+    state Add_Links {
+        old_edges = set_difference(old_edges, shadows) # filter out shadows
+        new_edges = set_difference(new_edges, shadows) # filter out shadows
+        
+        for (i, old_edges) do {
+            delete_edge(Friendship, id(), i)
+        }
+        for (i, new_edges) do {
+            add_edge(Friendship, id(), i)
+        }
+        
+        wait(0)
+        default(Waiting)
+    }
+}

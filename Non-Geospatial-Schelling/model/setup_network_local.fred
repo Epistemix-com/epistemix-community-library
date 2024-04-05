@@ -1,0 +1,40 @@
+variables {
+    shared numeric link # iterator variable
+    shared list links
+}
+
+network Friendship {
+   is_directed = 0
+   has_group_agent = 0
+   output_interval = 1 # output recorded every day
+}
+
+agent_startup {
+    join(Friendship)
+}
+
+condition SETUP_NETWORK {
+
+    start_state = Pruning_Edges
+    meta_start_state = Generating_Edges
+    
+    state Generating_Edges {
+        randomize_network(Friendship, 8)
+        wait(0)
+        default(Excluded)
+    }
+    
+    state Pruning_Edges {
+        if (my_color == -1) then {
+            links = outlinks(Friendship, id())
+            for (link, links) do {
+                tell(link, my_open_spots, ask(_, my_open_spots) + 1)
+                delete_edge(Friendship, id(), link)
+            }
+            quit(Friendship)
+            exit()
+        }
+        wait(0)
+        default(Excluded)
+    }
+}
