@@ -1,6 +1,6 @@
 [metadata]
 name = "Non-Geospatial Schelling"
-description = """In this set of models, we explore the following question: How (if at all) do the dynamics of the classic Schelling model of residential segregation change if we change the topology of the network that determines what constitutes a "neighborhood"?"""
+description = "In this set of models, we explore the following question: How (if at all) do the dynamics of the classic Schelling model of residential segregation change if we change the topology of the network that determines what constitutes a 'neighborhood'?"
 categories = [
     "Social Science"
 ]
@@ -13,7 +13,7 @@ fred_versions = [
     ">=10.1.0",
     "<11"
 ]
-
+banner = "./images/network.png"
 [run_options]
 src_dir = "model/"
 entrypoints = [
