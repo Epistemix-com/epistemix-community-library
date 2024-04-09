@@ -1,8 +1,9 @@
-# Retirement Savings Equity Model
+# Non-Geospatial Schelling Models
 
 ## Authors
 
 Noah Burrell (noah.burrell@epistemix.com)
+
 Benjamin Panny (BMP83@pitt.edu)
 
 ## Description
