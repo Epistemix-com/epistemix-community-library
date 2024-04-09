@@ -1,0 +1,33 @@
+simulation {
+    locations = none
+    default_model = none
+    start_date = 2023-Jan-01
+    end_date = 2023-Jan-10
+}
+
+variables {
+    # simulation parameters whose values are set in the startup block below
+    shared numeric desired_similarity # fraction of block group neighbors that must be the same color to be happy
+    shared numeric edge_drop_prob # fraction of edges to drop from the initial network to create open spots
+    shared numeric radius # used to determine selection radius for new neighbors in `rewire_all_links_local.fred`
+    
+    agent numeric my_color
+    agent numeric my_open_spots
+
+    agent list friend_colors
+}
+
+startup {
+    # initialize shared variables
+    desired_similarity = 0.5
+    edge_drop_prob = 0.1
+    radius = 1
+    
+    # initialize custom agent population
+    read_agent_file(_agents.txt)
+}
+
+agent_startup {
+    # initialize values for agent variables that are shared among conditions
+    my_open_spots = 0
+}

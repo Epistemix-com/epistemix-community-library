@@ -1,0 +1,47 @@
+condition REWIRE {
+
+    comment {
+
+        Unhappy agents delete one friend who has a different color and connects to a random agent with an open spot.
+
+    }
+    
+    variables {
+        agent numeric id_to_add
+        agent numeric id_to_delete
+        
+        shared list potential_friends
+    }
+
+    start_state = Waiting
+
+    state Waiting {
+        wait()
+        default()
+    }
+
+    state Delete_Links {
+        # delete a link with different color
+        id_to_delete = select(sample_without_replacement(outlinks(Friendship, id()), 1, \
+                                ((friend_colors * (1 - my_color)) + ((1 - friend_colors) * my_color)) \ # XOR
+                            ), 0)
+        delete_edge(Friendship, id(), id_to_delete)
+        tell(id_to_delete, my_open_spots, ask(_, my_open_spots) + 1)
+     
+        wait(0)
+        default(Add_Links)
+    }
+        
+    state Add_Links {
+        # make a link with a new friend who has an open spot 
+        potential_friends = select(members(Friendship), _ != id())
+        id_to_add = select(sample_without_replacement(potential_friends, 1, \
+                            ask(potential_friends, my_open_spots) \ # weight sampling by open spots
+                        ), 0)
+        add_edge(Friendship, id(), id_to_add)
+        tell(id_to_add, my_open_spots, ask(_, my_open_spots) - 1)
+        
+        wait(0)
+        default(Waiting)
+    }
+}

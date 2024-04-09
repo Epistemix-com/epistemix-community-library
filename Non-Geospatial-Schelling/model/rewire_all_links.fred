@@ -1,0 +1,51 @@
+condition REWIRE {
+
+    comment {
+
+        Unhappy agents delete all friends and connect to random agents who have any open spots.
+        The total number of connections for an agent is preserved by this rewiring.
+
+    }
+    
+    variables {
+        agent numeric num_to_add
+        
+        shared list potential_friends
+    }
+
+    start_state = Waiting
+
+    state Waiting {
+        wait()
+        default()
+    }
+
+    state Delete_Links {
+        # delete all links
+        links = outlinks(Friendship, id())
+        tell(links, my_open_spots, ask(_, my_open_spots) + 1)
+        num_to_add = length(links)
+        for (link, links) do {
+            delete_edge(Friendship, id(), link)
+        }
+     
+        wait(0)
+        default(Add_Links)
+    }
+        
+    state Add_Links {
+        # make a link with a new friend who has an open spot
+        potential_friends = select(members(Friendship), _ != id())
+        links = sample_without_replacement(potential_friends, num_to_add, \
+                            ask(potential_friends, my_open_spots) \ # weight sampling by open spots
+                        )
+                        
+        for (link, links) do {
+            add_edge(Friendship, id(), link)
+            tell(link, my_open_spots, ask(_, my_open_spots) - 1)
+        }
+        
+        wait(0)
+        default(Waiting)
+    }
+}

@@ -1,0 +1,10 @@
+comment {
+    SCHELLING MODEL ON A RANDOM NETWORK
+    - rewire all links when unhappy
+    - added links are added in the same neighborhood, if possible
+}
+
+include core.fred
+include setup_network_local.fred
+include happiness.fred
+include rewire_all_links_local.fred

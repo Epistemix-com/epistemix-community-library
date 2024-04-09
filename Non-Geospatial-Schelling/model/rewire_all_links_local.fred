@@ -1,0 +1,104 @@
+variables {
+    agent numeric num_to_add
+}
+
+agent_startup {
+    num_to_add = 0
+}
+    
+condition REWIRE {
+
+    comment {
+
+        Unhappy agents delete all friends and connect to random agents who have any open spots.
+        The total number of connections for an agent is preserved by this rewiring.
+
+    }
+    
+    variables {
+        shared numeric central_neighbor
+        shared numeric radius_temp
+        shared numeric neighborhood_spot_count
+        shared numeric my_open_spots_temp
+        
+        shared list edge_neighbors
+        shared list ids_to_add
+        shared list weights
+        
+        # agent numeric num_to_add
+    }
+
+    start_state = Waiting
+
+    state Waiting {
+        wait()
+        default()
+    }
+
+    state Delete_Links {
+        # delete all links
+        links = outlinks(Friendship, id())
+        tell(links, my_open_spots, ask(_, my_open_spots) + 1)
+        num_to_add = length(links)
+        
+        for (link, links) do {
+            delete_edge(Friendship, id(), link)
+            my_open_spots = my_open_spots + num_to_add
+        }
+     
+        wait(0)
+        default(Add_Links)
+    }
+        
+    state Add_Links {
+        my_open_spots_temp = my_open_spots
+        my_open_spots = 0 # temporarily to zero so that an agent cannot select themself to add a link to 
+    
+        if (num_to_add == 0) then num_to_add = 1
+                
+        central_neighbor = select(sample_without_replacement(members(Friendship), 1, \
+                                    ask(members(Friendship), my_open_spots) \ # weight sampling by open spots
+                            ), 0)
+                        
+        links = list(central_neighbor)
+        num_to_add = num_to_add - 1
+        
+        radius_temp = radius
+        radius = radius - 1
+        neighborhood_spot_count = ask(central_neighbor, my_open_spots > 0) 
+
+        while (neighborhood_spot_count < num_to_add) do {
+            radius = radius + 1
+            edge_neighbors = edge_neighborhood(Friendship, central_neighbor, radius, weights)
+            
+            erase(edge_neighbors, 0)
+            erase(weights, 0)
+            
+            neighborhood_spot_count = length( \
+                                        select(ask(edge_neighbors, my_open_spots), _ > 0) \
+                                    )
+        }
+        radius = radius_temp
+        
+        push(links, \
+            sample_without_replacement(edge_neighbors, num_to_add, \
+                            ask(edge_neighbors, my_open_spots) * (1 / (weights * weights)) \ 
+                            \ # weight sampling by open spots and (inversely) by squared distance to central_neighbor
+                        ) \
+        )
+        
+        # make a link with a new friends who have an open spot
+        for (link, links) do {
+            add_edge(Friendship, id(), link)
+            tell(link, my_open_spots, ask(_, my_open_spots) - 1)
+        }
+        
+        my_open_spots = my_open_spots_temp
+        my_open_spots = my_open_spots - length(outlinks(Friendship, id()))
+
+        num_to_add = 0 # reset value; this is used to indicate when an agent is moved to this state directly from Waiting
+        
+        wait(0)
+        default(Waiting)
+    }
+}

@@ -1,0 +1,52 @@
+condition HAPPINESS {
+
+    comment {
+
+        This condition determines whether individual agents are happy or unhappy
+        with the color makeup of their block group neighbors.
+
+    }
+    
+    variables {
+        agent numeric similarity
+    }
+
+    start_state = Waiting_Initial
+    
+    state Waiting_Initial {
+        # wait until after network pruning happens in the SETUP_NETWORK Condition
+        wait(uniform(25, 49)) # distribute evaluating happiness throughout the day
+        if (my_color == -1) then next(Excluded) # exclude "shadow" agents
+        default(Evaluating_Happiness)
+    }
+    
+    state Waiting {
+        wait(uniform(0, 24)) # distribute evaluating happiness throughout the day
+        default(Evaluating_Happiness)
+    }
+
+    state Evaluating_Happiness {
+        if (length(outlinks(Friendship, id())) == 0) then set_state(REWIRE, Add_Links)
+        friend_colors = ask(outlinks(Friendship, id()), my_color)
+        similarity = div( \
+                          sum( \
+                               ((friend_colors * my_color) + ((1 - friend_colors) * (1 - my_color))) \ # XNOR
+                          ), \
+                          length(friend_colors) \
+                     )
+        wait(0)
+        if (similarity >= desired_similarity) then next(Happy)
+        default(Unhappy)
+    }
+    
+    state Happy {
+        wait(0)
+        default(Waiting)
+    }
+    
+    state Unhappy {
+        set_state(REWIRE, Delete_Links)
+        wait(0)
+        default(Waiting)
+    }
+}
