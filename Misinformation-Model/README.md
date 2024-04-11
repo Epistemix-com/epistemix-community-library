@@ -5,7 +5,7 @@ Claire Dickey (claire.dickey@epistemix.com)
 
 ## Description
 
-This model begins by building a network to represent day-to-day in-person interactions between agents. It starting by stepping through the agents' daily schedules (as determined in the synthetic population) and randomly selecting other agents from "interaction pool" (e.g., the workplace, the block group) to become network links. 
+This model begins by building a network to represent day-to-day in-person interactions between agents. It starts by stepping through the agents' daily schedules (as determined in the synthetic population) and randomly selecting other agents from "interaction pool" (e.g., the workplace, the block group) to become network links. 
 
 It then has agents share an idea, which is represented by an (x,y) coordinate pair. Each idea originator starts with idea values of (0,0) but with act of sharing, a small amount of noise is added to the values received by the agents being told. As the idea is shared through the network, it rapidly evolves away from its starting values.
 
