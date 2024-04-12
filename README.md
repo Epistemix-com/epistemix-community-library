@@ -1,8 +1,4 @@
-# epistemix-community-library
-
-Welcome to the Epistemix Community Library!
-
-## Overview
+# Epistemix Community Model Library
 Welcome to the Epistemix Model Library. Here you can browse the ready-made models that are available for use in the Epistemix Platform. For information about how to access these models within the Platform IDE, as well as how to contribute your own models, see our [documentation](https://docs.epistemix.com).
 
 ## Models
