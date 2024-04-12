@@ -4,7 +4,7 @@ Welcome to the Epistemix Model Library. Here you can browse the ready-made model
 ## Models
 The models contained within this repository span multiple use-cases and can serve as a great starting point for your custom models.
 
-* [Asthema Events](Asthma-Events/README.md) - A model that gives some agents an asthma attribute, and triggers asthma events based on the input daily air quality (AQI). 
+* [Asthma Events](Asthma-Events/README.md) - A model that gives some agents an asthma attribute, and triggers asthma events based on the input daily air quality (AQI). 
 * [Epstein Rebellion Model Geospatial](Epstein-Rebellion-Model-Geospatial/README.md) - This model captures the evolution of civil violence in a population split into regular agents, who are disaffected and willing to rebel if the conditions are right, and cop agents, who try to quell rebellion by jailing those agents. In this implementation, the households of Grand Isle County, VT serve as the locations between which agents move.
 * [Epstein Rebellion Model Grid](Epstein-Rebellion-Model-Grid/README.md) - This model captures the evolution of civil violence in a population split into regular agents, who are disaffected and willing to rebel if the conditions are right, and cop agents, who try to quell rebellion by jailing those agents. In this implementation, agents move across a simple grid.
 * [Finding a Local Doctor](Finding-a-Local-Doctor/README.md) - The Dr Office modernisation efficiency model is a FRED demonstration model exploring the effect of modernisation of healthcare services on healthcare outcomes.
