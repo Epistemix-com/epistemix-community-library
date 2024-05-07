@@ -8,10 +8,7 @@ authors = [
     "Erin Zwick"
 ]
 version = "0.1.0"
-fred_versions = [
-  ">=8.4",
-  "<11"
-]
+
 banner = "./images/purple_epistemix.png"
 
 [run_options]

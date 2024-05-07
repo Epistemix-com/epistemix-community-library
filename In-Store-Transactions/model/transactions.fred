@@ -3,17 +3,21 @@ comment {
    Model name: Transactions
    Author: Erin Zwick, erin.zwick@epistemix.com
    Date: 11/02/2022
+       Updated: 05/07/2024 by Kyle Slugg-Urbino, kyle.sluggurbino@epistemix.com
+       Notes: Commented out simulation block to ensure compatibility with FRED 11.
+       
    Description: The purpose of the Transactions model is to demonstrate generating
        synthetic sales data with a FRED model.
+       
    Scenarios: Users can adjust the number of stores, items, and prices by editing
        `data/item_inventory_TRANSACTIONS.csv`
 }
 
-simulation {
-    locations = Loving_County_TX
-    start_date = 2022-May-10
-    end_date = 2022-May-11
-}
+# simulation {
+#     locations = Loving_County_TX
+#     start_date = 2022-May-10
+#     end_date = 2022-May-11
+# }
 
 variables {
     shared list_table store_inventories
