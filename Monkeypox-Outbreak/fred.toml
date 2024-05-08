@@ -8,10 +8,7 @@ authors = [
     "Tommy Nelson"
 ]
 version = "0.1.0"
-fred_versions = [
-  ">=8.4",
-  "<9"
-]
+
 banner = "./images/orange_epistemix.png"
 
 [run_options]
