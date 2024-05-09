@@ -9,6 +9,10 @@ authors = [
 ]
 version = "0.1.0"
 
+fred_versions = [
+  ">=11.0.1"
+]
+
 banner = "./images/purple_epistemix.png"
 
 [run_options]
