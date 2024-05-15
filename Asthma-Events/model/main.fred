@@ -1,9 +1,3 @@
-simulation {
-    locations =  Hennepin_County_MN
-    start_date = 2024-Jan-01
-    end_date = 2024-Dec-30
-}
-
 variables {
 	shared list_table daily_aqi
 	
