@@ -7,10 +7,10 @@ categories = [
 authors = [
     "Claire Dickey <claire.dickey@epistemix.com>"
 ]
-version = "0.2.0"
+version = "0.3.0"
 fred_versions = [
-    ">=10.1.0",
-    "<11"
+    ">=11.0.1",
+    "<12"
 ]
 banner = "./images/black_epistemix.png"
 [run_options]
