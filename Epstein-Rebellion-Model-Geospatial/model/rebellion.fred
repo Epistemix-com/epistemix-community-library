@@ -56,7 +56,7 @@ variables {
     agent list dist_indices
 
     shared list_table nearby_locations
-    nearby_locations.output=1
+    nearby_locations.output_interval=1
 }
 
 startup {
