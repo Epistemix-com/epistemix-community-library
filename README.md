@@ -48,9 +48,8 @@ dependencies of our named dependencies) in `requirements.txt` from the abstract
 3. Commit changes to both `requirements.in` and `requirements.txt` to version
    control.
 
-### Manifest
-
-The `generate-manifest.sh` file is executed when a commit is pushed to the `main` branch. This generates a file called `manifest.toml`, which is then stored in the `model-library-assets` S3 bucket and is used by the API. It is not stored in GitHub.
+### Deployment
+The `generate-manifest.sh` file is executed when a commit is pushed to the main or production branch.  There is a github action workflow that syncs the contents of the manifest to an S3 bucket and consumed by downstream services.  The main branch publishes to the development environment and the production branch publishes to the production environment, with corresponding S3 buckets `dev-model-library-assets` and `prod-model-library-assets`.
 
 ### Adding a new .toml file
 
