@@ -25,6 +25,9 @@ These models are automatically included in your [Epistemix Platform IDE](https:/
 ## Contributing Your Models
 We encourage everyone who wants to contribute their models to the Community Library to do so. Please follow the [instructions for contributing here](https://docs.epistemix.com/platform/community-library/#library-submission-guidelines).
 
+## Publishing changes to production
+When changes are ready to be pushed to the production environment, the changes __*must*__ be merged by pull request into the `production` branch.  The `production` branch will reflect the current code of the production environment at all times.
+
 ### Dockerfile
 
 We include a Dockerfile to help with administrative tasks like dependency
