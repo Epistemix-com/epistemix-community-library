@@ -25,6 +25,9 @@ These models are automatically included in your [Epistemix Platform IDE](https:/
 ## Contributing Your Models
 We encourage everyone who wants to contribute their models to the Community Library to do so. Please follow the [instructions for contributing here](https://docs.epistemix.com/platform/community-library/#library-submission-guidelines).
 
+## Publishing changes to production
+When changes are ready to be pushed to the production environment, the changes __*must*__ be merged by pull request into the `production` branch.  The `production` branch will reflect the current code of the production environment at all times.
+
 ### Dockerfile
 
 We include a Dockerfile to help with administrative tasks like dependency
@@ -48,9 +51,8 @@ dependencies of our named dependencies) in `requirements.txt` from the abstract
 3. Commit changes to both `requirements.in` and `requirements.txt` to version
    control.
 
-### Manifest
-
-The `generate-manifest.sh` file is executed when a commit is pushed to the `main` branch. This generates a file called `manifest.toml`, which is then stored in the `model-library-assets` S3 bucket and is used by the API. It is not stored in GitHub.
+### Deployment
+The `generate-manifest.sh` file is executed when a commit is pushed to the main or production branch.  There is a github action workflow that syncs the contents of the manifest to an S3 bucket and consumed by downstream services.  The main branch publishes to the development environment and the production branch publishes to the production environment, with corresponding S3 buckets `dev-model-library-assets` and `prod-model-library-assets`.
 
 ### Adding a new .toml file
 
