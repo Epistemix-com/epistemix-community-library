@@ -18,8 +18,8 @@ variables {
     shared list degree_list
     shared list_table network_links
 
-    degree_list.output = 1
-    network_links.output = 1
+    degree_list.output_interval = 1
+    network_links.output_interval = 30
 }
 
 

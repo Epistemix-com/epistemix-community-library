@@ -1,9 +1,3 @@
-simulation {
-    locations = Butte_County_ID
-    start_date = 2023-Jan-01
-    end_date = 2024-Jan-01
-}
-
 
 startup {
     open_csv(network_edges.csv, "X", "Y", "weight")
