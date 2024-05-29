@@ -1,8 +1,6 @@
 simulation {
     locations = none
     default_model = none
-    start_date = 2023-Jan-01
-    end_date = 2023-Jan-10
 }
 
 variables {
