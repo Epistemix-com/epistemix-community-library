@@ -19,7 +19,7 @@ TOKEN = "pk.eyJ1IjoicG5vd2VsbCIsImEiOiJja201bHptMXkwZnQyMnZxcnFveTVhM2tyIn0.Pyar
 
 def get_states(job):
     states = pd.DataFrame()
-    states["sim_date"] = job.get_job_date_table().sim_date
+    states["sim_date"] = job.results.dates().sim_date
     for x in [
         "Exposed",
         "InfectiousSymptomatic",
