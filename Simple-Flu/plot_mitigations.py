@@ -26,10 +26,10 @@ def get_states(job):
         "InfectiousAsymptomatic",
         "Recovered",
     ]:
-        counts = job.get_job_state_table(
-            condition="RESP_DISEASE",
-            state=x,
-            count_type="new",
+        counts = job.results.state(
+            "RESP_DISEASE",
+            x,
+            "new",
         )
 
         counts.rename(columns={"new": x}, inplace=True)
