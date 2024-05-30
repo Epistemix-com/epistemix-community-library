@@ -14,12 +14,6 @@ comment {
 
 }
 
-simulation {
-    locations = Kewaunee_County_WI
-    start_date = 2022-Jan-01
-    end_date = 2025-Jan-01
-}
-
 variables {
     agent numeric household_usage
     shared numeric county_monthly_usage
