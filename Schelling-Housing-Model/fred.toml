@@ -10,8 +10,7 @@ authors = [
 ]
 version = "0.1.0"
 fred_versions = [
-  ">=8.4",
-  "<9"
+    ">=11.0.1"
 ]
 banner = "./images/mint_epistemix.png"
 
