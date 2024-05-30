@@ -46,7 +46,7 @@ def get_states(job):
 
 
 def get_explocs(job):
-    exp_data = job.runs[1].get_csv_output("exposure_locs.csv")
+    exp_data = job.results.csv_output("exposure_locs.csv")
     exp_data["today"] = (
         pd.to_datetime(exp_data["today"], format="%Y%m%d")
     ).dt.date.apply(pd.Timestamp)
