@@ -6,12 +6,6 @@ comment {
    
 }
 
-simulation {
-    locations = Kewaunee_County_WI
-    start_date = 2023-Jan-01
-    end_date = 2023-Jan-14
-}
-
 variables {
     # global variables
     shared numeric desired_similarity # agents need at least this fraction of neighbors to be similar to be happy
