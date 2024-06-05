@@ -13,9 +13,14 @@ variables {
     agent numeric my_open_spots
 
     agent list friend_colors
+    
+    shared list synth_pop_agents # a list to hold agents loaded from the synth pop, if any, which we would like to remove
 }
 
 startup {
+    # Record agents loaded from provided location, if any
+    synth_pop_agents = get_population()
+    
     # initialize shared variables
     desired_similarity = 0.5
     edge_drop_prob = 0.1
@@ -26,6 +31,9 @@ startup {
 }
 
 agent_startup {
+    # remove agent if present in synth_pop_agents
+    if (is_in_list(synth_pop_agents, id())) then exit()
+    print(id())
     # initialize values for agent variables that are shared among conditions
     my_open_spots = 0
 }
