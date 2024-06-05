@@ -1,0 +1,8 @@
+#! /bin/bash
+set -e
+
+rm -rf .venv
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -e .\[dev\]
+python -m pip install --upgrade build twine

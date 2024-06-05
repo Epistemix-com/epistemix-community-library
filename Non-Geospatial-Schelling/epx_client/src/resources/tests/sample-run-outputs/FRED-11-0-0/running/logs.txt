@@ -1,0 +1,72 @@
+[2024-05-23T15:57:18.448Z] INFO: Environment variables: FRED_DATA=/data FRED_LIBRARY=/library
+[2024-05-23T15:57:18.449Z] INFO: FRED simulation seed: 4713544431949144923
+[2024-05-23T15:57:18.474Z] INFO: void FRED::fred_setup(Managers&, Config&, Random&, Variable&, Parser&, SimulationOutput&) started.
+[2024-05-23T15:57:18.475Z] INFO: void Parser::setup(Managers&, Config&, Variable&, Random&, SimulationOutput&) started.
+[2024-05-23T15:57:18.482Z] INFO: void PlaceManager::read_metadata(Config&, SimulationOutput&) started.
+[2024-05-23T15:57:18.492Z] INFO: void Variable::setup(Parser&, SimulationOutput&) started.
+[2024-05-23T15:57:18.492Z] INFO: void AgentManager::setup_population(Managers&, Config&, Random&, Variable&, Parser&, SimulationOutput&) started.
+[2024-05-23T15:57:18.495Z] INFO: Estimated total agents = 70 
+[2024-05-23T15:57:18.497Z] INFO: void PlaceManager::read_all_places(Managers&, Config&, Random&, Variable&, SimulationOutput&) started.
+[2024-05-23T15:57:18.523Z] INFO: min_lat: 31.689530  max_lat: 31.946945 mean_lat: 31.818237
+[2024-05-23T15:57:18.560Z] INFO: void NetworkTypeManager::prepare_network_types(Managers&, Config&, Random&, Variable&, SimulationOutput&) started.
+[2024-05-23T15:57:18.560Z] INFO: void ConditionManager::prepare_conditions(Managers&, Config&, SimulationOutput&) started.
+[2024-05-23T15:57:18.560Z] INFO: FRED.start_state = Agent_Start
+[2024-05-23T15:57:18.560Z] INFO: FRED.metastart_state = Meta_Start
+[2024-05-23T15:57:18.560Z] INFO: FRED.group_start_state = Group_Start
+[2024-05-23T15:57:18.560Z] INFO: FRED.exposed_state = UNDEFINED
+[2024-05-23T15:57:18.560Z] INFO: UPDATE_VARIABLES.start_state = Excluded
+[2024-05-23T15:57:18.560Z] INFO: UPDATE_VARIABLES.metastart_state = UpdateNumeric
+[2024-05-23T15:57:18.560Z] INFO: UPDATE_VARIABLES.group_start_state = Excluded
+[2024-05-23T15:57:18.560Z] INFO: UPDATE_VARIABLES.exposed_state = UNDEFINED
+[2024-05-23T15:57:18.560Z] INFO: WRITE_CSV.start_state = WriteCsv
+[2024-05-23T15:57:18.560Z] INFO: WRITE_CSV.metastart_state = Excluded
+[2024-05-23T15:57:18.560Z] INFO: WRITE_CSV.group_start_state = Excluded
+[2024-05-23T15:57:18.560Z] INFO: WRITE_CSV.exposed_state = UNDEFINED
+[2024-05-23T15:57:18.560Z] INFO: WRITE_FILE.start_state = WriteFile
+[2024-05-23T15:57:18.560Z] INFO: WRITE_FILE.metastart_state = Excluded
+[2024-05-23T15:57:18.560Z] INFO: WRITE_FILE.group_start_state = Excluded
+[2024-05-23T15:57:18.560Z] INFO: WRITE_FILE.exposed_state = UNDEFINED
+[2024-05-23T15:57:18.560Z] INFO: TRANS_CONDITION.start_state = Susceptible
+[2024-05-23T15:57:18.560Z] INFO: TRANS_CONDITION.metastart_state = Import
+[2024-05-23T15:57:18.560Z] INFO: TRANS_CONDITION.group_start_state = Excluded
+[2024-05-23T15:57:18.560Z] INFO: TRANS_CONDITION.exposed_state = Exposed
+[2024-05-23T15:57:18.560Z] INFO: Observee.start_state = AllAgentStart
+[2024-05-23T15:57:18.560Z] INFO: Observee.metastart_state = Excluded
+[2024-05-23T15:57:18.560Z] INFO: Observee.group_start_state = Excluded
+[2024-05-23T15:57:18.560Z] INFO: Observee.exposed_state = UNDEFINED
+[2024-05-23T15:57:18.560Z] INFO: WORKWEEK.start_state = Excluded
+[2024-05-23T15:57:18.560Z] INFO: WORKWEEK.metastart_state = Excluded
+[2024-05-23T15:57:18.560Z] INFO: WORKWEEK.group_start_state = Group_Start
+[2024-05-23T15:57:18.560Z] INFO: WORKWEEK.exposed_state = UNDEFINED
+[2024-05-23T15:57:18.563Z] INFO: void FRED::run_fred(Config&, Managers&, Random&, Variable&, SimulationOutput&) started.
+[2024-05-23T15:57:18.563Z] INFO: About to simulate 14 days.
+[2024-05-23T15:57:18.563Z] INFO: Beginning to simulate day 0, which is Wed 2020-01-01
+[2024-05-23T15:57:18.714Z] INFO: Finished simulating day 0
+[2024-05-23T15:57:18.714Z] INFO: Beginning to simulate day 1, which is Thu 2020-01-02
+[2024-05-23T15:57:18.719Z] INFO: Finished simulating day 1
+[2024-05-23T15:57:18.719Z] INFO: Beginning to simulate day 2, which is Fri 2020-01-03
+[2024-05-23T15:57:18.731Z] INFO: Finished simulating day 2
+[2024-05-23T15:57:18.731Z] INFO: Beginning to simulate day 3, which is Sat 2020-01-04
+[2024-05-23T15:57:18.737Z] INFO: Finished simulating day 3
+[2024-05-23T15:57:18.737Z] INFO: Beginning to simulate day 4, which is Sun 2020-01-05
+[2024-05-23T15:57:18.761Z] INFO: Finished simulating day 4
+[2024-05-23T15:57:18.761Z] INFO: Beginning to simulate day 5, which is Mon 2020-01-06
+[2024-05-23T15:57:18.780Z] INFO: Finished simulating day 5
+[2024-05-23T15:57:18.780Z] INFO: Beginning to simulate day 6, which is Tue 2020-01-07
+[2024-05-23T15:57:18.795Z] INFO: Finished simulating day 6
+[2024-05-23T15:57:18.795Z] INFO: Beginning to simulate day 7, which is Wed 2020-01-08
+[2024-05-23T15:57:18.800Z] INFO: Finished simulating day 7
+[2024-05-23T15:57:18.800Z] INFO: Beginning to simulate day 8, which is Thu 2020-01-09
+[2024-05-23T15:57:18.811Z] INFO: Finished simulating day 8
+[2024-05-23T15:57:18.811Z] INFO: Beginning to simulate day 9, which is Fri 2020-01-10
+[2024-05-23T15:57:18.817Z] INFO: Finished simulating day 9
+[2024-05-23T15:57:18.817Z] INFO: Beginning to simulate day 10, which is Sat 2020-01-11
+[2024-05-23T15:57:18.826Z] INFO: Finished simulating day 10
+[2024-05-23T15:57:18.827Z] INFO: Beginning to simulate day 11, which is Sun 2020-01-12
+[2024-05-23T15:57:18.834Z] INFO: Finished simulating day 11
+[2024-05-23T15:57:18.834Z] INFO: Beginning to simulate day 12, which is Mon 2020-01-13
+[2024-05-23T15:57:18.845Z] INFO: Finished simulating day 12
+[2024-05-23T15:57:18.845Z] INFO: Beginning to simulate day 13, which is Tue 2020-01-14
+[2024-05-23T15:57:18.855Z] INFO: Finished simulating day 13
+[2024-05-23T15:57:18.859Z] INFO: void FRED::run_fred(Config&, Managers&, Random&, Variable&, SimulationOutput&) finished.
+[2024-05-23T15:57:18.859Z] INFO: FRED exiting with code 0

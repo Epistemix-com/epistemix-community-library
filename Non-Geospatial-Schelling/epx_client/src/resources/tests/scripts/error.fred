@@ -1,0 +1,7 @@
+include base_model.fred
+
+condition TRANS_CONDITION {
+    state Susceptible {
+        abort()
+    }
+}

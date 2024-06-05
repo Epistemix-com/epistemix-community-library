@@ -10,6 +10,7 @@ variables {
     shared numeric radius # used to determine selection radius for new neighbors in `rewire_all_links_local.fred`
     
     agent numeric my_color
+
     agent numeric my_open_spots
 
     agent list friend_colors

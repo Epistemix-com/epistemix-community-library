@@ -26,14 +26,21 @@ condition SETUP_NETWORK {
     }
     
     state Pruning_Edges {
+    
         links = outlinks(Friendship, id())
-        for (link, links) do {
-            if (bernoulli(edge_drop_prob)) then {
-                delete_edge(Friendship, id(), link)
-                my_open_spots = my_open_spots + 1
-                tell(link, my_open_spots, ask(_, my_open_spots) + 1)
+       
+            for (link, links) do {
+                if (bernoulli(edge_drop_prob)) then {
+                    delete_edge(Friendship, id(), link)
+                    my_open_spots = my_open_spots + 1
+                    tell(link, my_open_spots, ask(_, my_open_spots) + 1)
+                }
             }
-        }
+
+            print("Agent ",id(), " has links ",outlinks(Friendship, id()))
+        
+        
+        
         wait(0)
         default(Excluded)
     }

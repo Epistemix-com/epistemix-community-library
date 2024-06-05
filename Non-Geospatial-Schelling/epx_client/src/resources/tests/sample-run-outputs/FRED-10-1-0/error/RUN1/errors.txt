@@ -1,0 +1,2 @@
+FRED ERROR: Agent 204941490 aborts in condition TRANS_CONDITION state Susceptible on sim day 0 sim date 2020-01-01:
+abort()

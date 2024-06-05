@@ -1,0 +1,78 @@
+#! /bin/bash
+
+# -----------------------------------------------------------------------------
+# Generate sample FRED run output for various FRED versions. Uses the FRED
+# model in ./main.fred which aims to generate examples of all FRED output
+# types.
+#
+# Requires two inputs: FRED data and FRED library specifying paths to
+# corresponding FRED dependencies on the host.
+#
+# E.g. ./generate ~/Projects/FRED-data ~/Projects/FRED-library
+# or if you have environment variables set for those paths:
+# e.g. ./generate $FRED_DATA $FRED_LIBRARY
+# -----------------------------------------------------------------------------
+set -e
+
+FRED_DATA=$1
+FRED_LIBRARY=$2
+
+function generate_sample_output {
+    # Generate sample output for a given FRED version.
+    #
+    # e.g. generate_sample_output "10.1.0"
+    fredVersion=$1
+    outDir=sample-run-outputs/FRED-$(tr "." "-" <<< ${fredVersion})
+    echo "Generating sample FRED output in ${outDir}"
+    # Ensure `outDir` is empty
+    rm -rf $outDir && mkdir -p $outDir
+    run_success_example $outDir $fredVersion
+    run_error_example $outDir $fredVersion
+
+    # Rarely, the return_code.txt file exists but is empty. This should still
+    # be considered a running simulation
+    tgtDir=$outDir/running-empty-return-code
+    cp -r $outDir/success $tgtDir
+    # Clean up any files that are not needed as indicators of the run status
+    find $tgtDir -path '*/DAILY/*' -delete
+    find $tgtDir -path '*/WEEKLY/*' -delete
+    find $tgtDir -path '*/CSV/*' -delete
+    find $tgtDir -path '*/LIST/*' -delete
+    find $tgtDir -path '*/VARIABLES/*' -delete
+    find $tgtDir -path '*/USER_OUTPUT/*' -delete
+
+    # Empty the return_code.txt file
+    truncate -s 0 $(find $tgtDir -path '**/return_code.txt')
+
+    # Running scenario with no return_code.txt file
+    cp -r $tgtDir $outDir/running
+    find $outDir/running -path '**/return_code.txt' -delete
+}
+
+function run_success_example {
+    successDir=$1/success
+    fredVersion=$2
+    mkdir $successDir
+    docker run \
+        --volume $FRED_DATA:/data \
+        --volume $FRED_LIBRARY:/library \
+        --volume $(pwd)/scripts:/model_directory \
+        --volume $(realpath $successDir):/OUTPUT_DIR \
+        $ECR/minimal-fred-image:${fredVersion} -p ./success.fred -d /OUTPUT_DIR
+}
+
+function run_error_example {
+    errorDir=$1/error
+    fredVersion=$2
+    mkdir $errorDir
+    docker run \
+        --volume $FRED_DATA:/data \
+        --volume $FRED_LIBRARY:/library \
+        --volume $(pwd)/scripts:/model_directory \
+        --volume $(realpath $errorDir):/OUTPUT_DIR \
+        $ECR/minimal-fred-image:${fredVersion} -p ./error.fred -d /OUTPUT_DIR \
+        || echo "FRED ${fredVersion} error sample generated successfully" 
+}
+
+generate_sample_output "10.1.0"
+generate_sample_output "11.0.0"

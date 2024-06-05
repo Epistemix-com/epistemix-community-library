@@ -36,6 +36,7 @@ condition REWIRE {
     state Add_Links {
         # make a link with a new friend who has an open spot
         potential_friends = select(members(Friendship), _ != id())
+        print(potential_friends)
         links = sample_without_replacement(potential_friends, num_to_add, \
                             ask(potential_friends, my_open_spots) \ # weight sampling by open spots
                         )
