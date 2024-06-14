@@ -101,7 +101,7 @@ condition BATHHOUSE {
 			# record the encounter at the bathhouse
 			tell(BathHouse, encounters, ask(BathHouse, encounters) + 1)
             # calculate the probability that the encounter leads to transmission
-            print_event_file(encounters.txt, "Encounter between ", id(), " and ", candidate)
+            print_file(encounters.txt, date(), " ", now(), ":00:00 ", "day ", sim_day(), " agent ", id(), " ", "Encounter between ", id(), " and ", candidate)
 			
 		}
         other_agent_sus = ask(candidate,mpxsus)
@@ -127,7 +127,7 @@ condition BATHHOUSE {
 	}
 
 	state Report {
-		print_event_file(report.txt,"BathHouse ", id(), " had ", attendees, " attendees and ", encounters, " encounters in the last week")
+		print_file(report.txt,date(), " ", now(), ":00:00 ", "day ", sim_day(), " agent ", id()," ", "BathHouse ", id(), " had ", attendees, " attendees and ", encounters, " encounters in the last week")
 		attendees = 0
 		encounters = 0
 		wait(24*7)

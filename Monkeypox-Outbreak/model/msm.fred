@@ -5,7 +5,7 @@ variables {
 
 	# the count of MSM agents in the population
 	shared numeric msm_count
-	msm_count.output = 1
+	msm_count.output_interval = 365
     shared list msm_list
 }
 

@@ -19,17 +19,17 @@ TOKEN = "pk.eyJ1IjoicG5vd2VsbCIsImEiOiJja201bHptMXkwZnQyMnZxcnFveTVhM2tyIn0.Pyar
 
 def get_states(job):
     states = pd.DataFrame()
-    states["sim_date"] = job.get_job_date_table().sim_date
+    states["sim_date"] = job.results.dates().sim_date
     for x in [
         "Exposed",
         "InfectiousSymptomatic",
         "InfectiousAsymptomatic",
         "Recovered",
     ]:
-        counts = job.get_job_state_table(
-            condition="RESP_DISEASE",
-            state=x,
-            count_type="new",
+        counts = job.results.state(
+            "RESP_DISEASE",
+            x,
+            "new",
         )
 
         counts.rename(columns={"new": x}, inplace=True)
@@ -46,7 +46,7 @@ def get_states(job):
 
 
 def get_explocs(job):
-    exp_data = job.runs[1].get_csv_output("exposure_locs.csv")
+    exp_data = job.results.csv_output("exposure_locs.csv")
     exp_data["today"] = (
         pd.to_datetime(exp_data["today"], format="%Y%m%d")
     ).dt.date.apply(pd.Timestamp)

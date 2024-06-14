@@ -7,10 +7,4 @@ comment {
     Tommy Nelson : tommy.nelson@epistemix.com
 }
 
-simulation {
-    locations =  Kewaunee_County_WI
-    start_date = 2023-Jan-01
-    end_date = 2023-Jul-01
-}
-
 include simpleflu.fred
