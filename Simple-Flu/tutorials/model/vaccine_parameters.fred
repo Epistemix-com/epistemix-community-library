@@ -1,7 +1,3 @@
-simulation {
-    seed = 31468
-}
-
 startup {
     days_until_effective = 14
     flu_delay = 15
