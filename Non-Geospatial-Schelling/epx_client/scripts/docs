@@ -1,4 +1,0 @@
-#! /bin/bash
-
-sphinx-build -M html docs/source docs/build
-python -m http.server --directory docs/build/html
