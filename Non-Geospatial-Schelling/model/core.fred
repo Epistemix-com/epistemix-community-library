@@ -34,7 +34,6 @@ startup {
 agent_startup {
     # remove agent if present in synth_pop_agents
     if (is_in_list(synth_pop_agents, id())) then exit()
-    print(id())
     # initialize values for agent variables that are shared among conditions
     my_open_spots = 0
 }

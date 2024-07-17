@@ -36,8 +36,6 @@ condition SETUP_NETWORK {
                     tell(link, my_open_spots, ask(_, my_open_spots) + 1)
                 }
             }
-
-            print("Agent ",id(), " has links ",outlinks(Friendship, id()))
         
         
         
