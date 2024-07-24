@@ -11,8 +11,8 @@ variables {
     # network variables
     shared list_table adjacency_matrix
     shared list_table distance_matrix
-    adjacency_matrix.output = 1
-    distance_matrix.output = 1
+    adjacency_matrix.output_interval = 1
+    distance_matrix.output_interval = 1
 }
 
 place City {
