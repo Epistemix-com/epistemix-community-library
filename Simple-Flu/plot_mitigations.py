@@ -7,11 +7,13 @@ import plotly
 import plotly.express as px
 import plotly.graph_objects as go
 import plotly.io as pio
+import requests
 
-from epxexec.visual.utils import default_plotly_template
-
-pio.templates["epistemix"] = default_plotly_template()
-pio.templates.default = "epistemix"
+# Use the Epistemix default plotly template
+r = requests.get("https://gist.githubusercontent.com/daniel-epistemix/8009ad31ebfa96ac97b7be038c014c0d/raw/320c3b0ca3dfbf7946e49c97254fa65d4753aeac/epx_plotly_theme.json")
+if r.status_code == 200:
+    pio.templates["epistemix"] = go.layout.Template(r.json())
+    pio.templates.default = "epistemix"
 
 MAPSTYLE = "mapbox://styles/pnowell/cl4n9fic8001i15mnfmozrt8j"
 TOKEN = "pk.eyJ1IjoicG5vd2VsbCIsImEiOiJja201bHptMXkwZnQyMnZxcnFveTVhM2tyIn0.Pyarp9gHCON4reKvM2fZZg"
