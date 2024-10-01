@@ -15,8 +15,8 @@ if r.status_code == 200:
     pio.templates["epistemix"] = go.layout.Template(r.json())
     pio.templates.default = "epistemix"
 
-MAPSTYLE = "mapbox://styles/pnowell/cl4n9fic8001i15mnfmozrt8j"
-TOKEN = "pk.eyJ1IjoicG5vd2VsbCIsImEiOiJja201bHptMXkwZnQyMnZxcnFveTVhM2tyIn0.Pyarp9gHCON4reKvM2fZZg"
+MAPSTYLE = "mapbox://styles/epxadmin/cm0ve9m13000501nq8q1zdf5p"
+TOKEN = "pk.eyJ1IjoiZXB4YWRtaW4iLCJhIjoiY20wcmV1azZ6MDhvcTJwcTY2YXpscWsxMSJ9._ROunfMS6hgVh1LPQZ4NGg"
 
 
 def get_states(job):
