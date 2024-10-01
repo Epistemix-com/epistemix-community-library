@@ -1,8 +1,6 @@
 simulation {
     locations = none
     default_model = none
-    start_date = 2023-Jan-01
-    end_date = 2023-Jan-10
 }
 
 variables {
@@ -12,12 +10,18 @@ variables {
     shared numeric radius # used to determine selection radius for new neighbors in `rewire_all_links_local.fred`
     
     agent numeric my_color
+
     agent numeric my_open_spots
 
     agent list friend_colors
+    
+    shared list synth_pop_agents # a list to hold agents loaded from the synth pop, if any, which we would like to remove
 }
 
 startup {
+    # Record agents loaded from provided location, if any
+    synth_pop_agents = get_population()
+    
     # initialize shared variables
     desired_similarity = 0.5
     edge_drop_prob = 0.1
@@ -28,6 +32,8 @@ startup {
 }
 
 agent_startup {
+    # remove agent if present in synth_pop_agents
+    if (is_in_list(synth_pop_agents, id())) then exit()
     # initialize values for agent variables that are shared among conditions
     my_open_spots = 0
 }

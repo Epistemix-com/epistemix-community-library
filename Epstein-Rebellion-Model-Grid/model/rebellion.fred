@@ -1,8 +1,3 @@
-simulation {
-    start_date = 2023-Jan-01
-    end_date = 2023-Apr-01
-}
-
 variables {
     ## simulation variables
     shared numeric k # factor for arrest prob
@@ -56,7 +51,7 @@ variables {
     agent list dist_indices
 
     shared list_table nearby_locations
-    nearby_locations.output=1
+    nearby_locations.output_interval=1
 }
 
 startup {

@@ -8,7 +8,7 @@ comment {
 
 variables {
     shared table truck_capacity
-    truck_capacity.output = 1
+    truck_capacity.output_interval = 1
 
     shared numeric disruption
     shared numeric disrupted_location
