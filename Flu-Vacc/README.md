@@ -48,7 +48,7 @@ These conditions (in the `record.fred` file) each produce a CSV output file (`ho
 
 ## Key Outputs
 
-The `RECORD` conditions each produce a CSV output file. These are used to create a animation in the `flu_vacc.ipynb` notebook that is analogous to the visualization produced by the NetLogo implementation of the FluVacc model. The actual code for producing this animation is encapsulated in the `plot_output.py` module.
+The `RECORD_HOUSEHOLD_LOCATION` and `RECORD_OUTCOMES` conditions in `record.fred` each produce a CSV output file. These are used to create an animation in the `flu_vacc.ipynb` notebook that is analogous to the visualization produced by the NetLogo implementation of the FluVacc model. The code that implements this animation is encapsulated in the `plot_output.py` module.
 
 The `flu_vacc.ipynb` notebook also calls a function (similarly encapsulated in the `plot_output.py` module) to create an epi-curve plot using the default output files written by the FRED simulation engine. This plot illustrates the differences in the annual flu seasons throughout the course of the simulation.
 Note that this plot is interactive, so you can zoom in on a particular spike in the plot to look more closely at the behavior in a given flu season.
