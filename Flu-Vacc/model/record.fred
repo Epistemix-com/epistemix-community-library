@@ -1,0 +1,41 @@
+place Workplace {
+    has_group_agent = 1
+}
+
+place Household {
+    has_group_agent = 1
+}
+
+startup {
+    open_csv(household.csv, "id", "lat", "long")
+    open_csv(outcomes.csv, "id", "year", "exposed", "vaccinated", "immunized")
+}
+
+condition RECORD_HOUSEHOLD_LOCATION {
+
+    start_state = Record
+
+    state Record {
+        if (is_member(Household)) then {
+            print_csv(household.csv, id(), latitude(Household), longitude(Household))
+        }
+        wait(0)
+        default(Excluded)
+    }
+}
+
+condition RECORD_OUTCOMES {
+
+    start_state = Wait
+
+    state Wait {
+        wait(until(Dec, 30))
+        default(Record)
+    }
+
+    state Record {
+        print_csv(outcomes.csv, id(), year(), exposed, vaccinated, immunized)
+        wait(0)
+        default(Wait)
+    }
+}

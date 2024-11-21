@@ -1,0 +1,24 @@
+[metadata]
+name = "SynthPop FluVacc"
+description = """In this model, agents experience successive flu seasons and, in each season, decide whether to adopt a highly effective, risk-free vaccine. An agent's decision to adopt the vaccine in the current season is self-interested, and they adapt their behavior based on their memory of previous flu seasons."""
+categories = [
+    "Population Health",
+    "Social Science"
+]
+authors = [
+    "Noah Burrell <noah.burrell@epistemix.com>"
+]
+version = "0.1.0"
+fred_versions = [
+    ">=12.0.0",
+]
+banner = "./images/mint_epistemix.png"
+[run_options]
+src_dir = [
+    "model/",
+    "exercise/model/"
+]
+entrypoint = [
+    "flu_vacc.fred",
+    "simple_transmission.fred"
+]

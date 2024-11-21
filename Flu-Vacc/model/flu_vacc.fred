@@ -1,0 +1,30 @@
+variables {
+    shared numeric cumu_incidence # count exposed
+    shared numeric incidence_threshold
+    shared numeric memory_half_time
+    shared numeric num_initial_infections
+    shared numeric probability_of_vaccination # percentage not a decimal
+    shared numeric tot_agents 
+    shared numeric vacc_efficacy # percentage not a decimal
+    
+    agent numeric exposed
+}
+
+startup {
+    incidence_threshold = 3
+    memory_half_time = 2
+    num_initial_infections = 10
+    probability_of_vaccination = 49
+    vacc_efficacy = 70
+
+    tot_agents = length( \ 
+            set_difference( \
+                set_difference(get_population(), get_group_agents(Household)), \
+                get_group_agents(Workplace) \
+        ) \
+    )
+}
+
+include flu_season_transmission.fred
+include update_behavior.fred
+include record.fred
