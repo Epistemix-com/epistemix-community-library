@@ -1,4 +1,4 @@
-# SynthPop FluVacc Model
+# FluVacc Model
 
 ## Authors
 
@@ -6,7 +6,7 @@ Noah Burrell (noah.burrell@epistemix.com)
 
 ## Description
 
-This model is an adaptation of a model originally implemented using NetLogo. The NetLogo implementation provides the following description:
+This model is an adaptation of a model originally implemented using NetLogo (Vardavas et al., 2007; Vardavas and Marcum, 2013). Alongside the model code, the NetLogo implementation provides the following description:
 
 > **WHAT IS IT?**
 > 
@@ -24,7 +24,7 @@ This model is an adaptation of a model originally implemented using NetLogo. The
 > 
 > iii) The original model was extended by Vardavas and Marcum, 2013 to run on various network structures. Here, for ease of visualization, we choose to use a simple network represented by a regular lattice which was not considered by Vardavas and Marcum, 2013. However, our regular lattice has long range interactions that are geographically local due to the constraint of the radius. The frequency of the long-distance interactions (i.e., the long range edges connecting sites) is chosen to follow a power-law or a semi-power-law. As we are unaware of the name for this type of lattice, we call it a clustered hub lattice.
 
-### Implementation in the FRED Modeling Language
+### Implementation in the FRED Modeling Language: Synthpop FluVacc
 A key difference between the NetLogo implementation(s) and this implementation is that the agents in this implementation come from the Epistemix Synthetic Population of the United States. As a result, transmission of the flu occurs on the implicit, proximity-based social network that results from the interactions of agents who appear at the same places (at the same times) during the course of the simulation, rather than on an explicit social network whose structure is defined in the model code itself.
 
 The notebook in the `exercise` subdirectory invites you to explore freely the transmission network that results from a simulation of the FRED modeling language implementation and consider the differences between that network and those considered in the NetLogo implementation(s) of this model.
