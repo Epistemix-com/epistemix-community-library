@@ -1,0 +1,36 @@
+
+variables {
+    shared numeric cumu_incidence # count exposed
+    shared numeric num_initial_infections
+    num_initial_infections = 10
+    agent numeric exposed
+}
+
+include ./../../model/flu_season_transmission.fred
+
+state INFLUENZA.Exposed {
+    set_state(RECORD_EXPOSURES, Record)
+}
+
+startup {
+    open_csv(exposures.csv, "source", "target")
+}
+
+condition RECORD_EXPOSURES {
+
+    start_state = Wait
+
+    state Wait {
+    
+        wait()
+        default()
+    }
+    
+    state Record {
+    
+        print_csv(exposures.csv, source(INFLUENZA), id())
+        
+        wait(0)
+        default(Excluded)
+    }
+}

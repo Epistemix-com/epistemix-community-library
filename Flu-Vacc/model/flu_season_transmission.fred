@@ -1,0 +1,64 @@
+condition INFLUENZA {
+    transmission_mode = proximity
+    transmissibility = 1.0
+    
+    exposed_state = Exposed
+    
+    start_state = Susceptible
+    meta_start_state = Meta_Start
+    
+    variables {
+        agent numeric wait_year
+    }
+    
+    state Meta_Start {
+        wait(2)
+        default(Import)
+    }
+    
+    state Import {
+        cumu_incidence = 0
+        import_exposures(INFLUENZA, num_initial_infections)
+        
+        wait(until(Jan, 1, 2))
+        default(Import)
+    }
+
+    state Susceptible {
+        exposed = 0
+        INFLUENZA.sus = 1
+        
+        wait()
+        default()
+    }
+
+    state Exposed {
+        INFLUENZA.sus = 0
+        exposed = 1
+        cumu_incidence = cumu_incidence + 1
+        
+        wait(24 * lognormal(1.9, 1.23))
+        default(Infectious)
+    }
+
+    state Infectious {
+        INFLUENZA.trans = 1
+        
+        wait(24 * lognormal(5.0, 1.5))
+        default(Recovered)
+    }
+
+    state Recovered {
+        INFLUENZA.trans = 0
+        wait_year = year() + 1
+        
+        wait(0)
+        default(Immune)
+    }
+    
+    state Immune {
+        INFLUENZA.sus = 0
+        wait(until(wait_year, Jan, 1, 1))
+        default(Susceptible)
+    }
+}
